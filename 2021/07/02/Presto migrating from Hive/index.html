@@ -16,9 +16,10 @@
 <meta property="og:description" content="Hive向Presto迁移需要注意的tips">
 <meta property="og:locale">
 <meta property="article:published_time" content="2021-07-02T13:17:12.000Z">
-<meta property="article:modified_time" content="2021-07-02T13:17:44.195Z">
+<meta property="article:modified_time" content="2021-07-02T13:29:42.337Z">
 <meta property="article:author" content="xiaoyuyu">
-<meta property="article:tag" content="Big Data,Presto">
+<meta property="article:tag" content="Big Data">
+<meta property="article:tag" content="Presto">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternative" href="/atom.xml" title="xiaoyuyulala" type="application/atom+xml">
@@ -174,7 +175,7 @@
         <p>Hive向Presto迁移需要注意的tips</p>
 <span id="more"></span>
 
-<h1 id="Presto-migrating-from-Hive"><a href="#Presto-migrating-from-Hive" class="headerlink" title="Presto migrating from Hive"></a>Presto migrating from Hive</h1><h2 id="区分PrestoDB-PrestoSQL"><a href="#区分PrestoDB-PrestoSQL" class="headerlink" title="区分PrestoDB/PrestoSQL"></a>区分PrestoDB/PrestoSQL</h2><p>就在 2020 年 12 月 27 日，prestosql 与 facebook 正式分裂,并改名为<code>trino</code>。分裂之前和之后的官网分别是：<a target="_blank" rel="noopener" href="https://prestosql.io/">https://prestosql.io/ </a>和 <a target="_blank" rel="noopener" href="https://trino.io/">https://trino.io</a>。</p>
+<h2 id="区分PrestoDB-PrestoSQL"><a href="#区分PrestoDB-PrestoSQL" class="headerlink" title="区分PrestoDB/PrestoSQL"></a>区分PrestoDB/PrestoSQL</h2><p>就在 2020 年 12 月 27 日，prestosql 与 facebook 正式分裂,并改名为<code>trino</code>。分裂之前和之后的官网分别是：<a target="_blank" rel="noopener" href="https://prestosql.io/">https://prestosql.io/ </a>和 <a target="_blank" rel="noopener" href="https://trino.io/">https://trino.io</a>。</p>
 <h2 id="Insert-overwrite不可用"><a href="#Insert-overwrite不可用" class="headerlink" title="Insert overwrite不可用"></a>Insert overwrite不可用</h2><p>presto 不支持 insert overwrite。</p>
 <p>目前关于表结构的创建和删除，比如create、drop等操作依然用hive实现，为了保持与现有表结构的一致性。</p>
 <p>而select、insert等操作使用presto来完成。</p>
@@ -291,7 +292,11 @@
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Big Data,Presto</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">Big Data</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">Presto</a>
         		</li>
       		
 		</ul>
@@ -382,6 +387,19 @@
             </div>
         </div>
         
+        
+        <div class="toc-container tooltip-left">
+            <i class="icon-font icon-category"></i>
+            <div class="tooltip tooltip-east">
+                <span class="tooltip-item">
+                </span>
+                <span class="tooltip-content">
+                    <div class="toc-article">
+                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8C%BA%E5%88%86PrestoDB-PrestoSQL"><span class="toc-number">1.</span> <span class="toc-text">区分PrestoDB&#x2F;PrestoSQL</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Insert-overwrite%E4%B8%8D%E5%8F%AF%E7%94%A8"><span class="toc-number">2.</span> <span class="toc-text">Insert overwrite不可用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#external-table"><span class="toc-number">3.</span> <span class="toc-text">external table</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E4%BA%8Epartition%E7%9A%84%E7%BB%86%E8%8A%82"><span class="toc-number">4.</span> <span class="toc-text">关于partition的细节</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#regexp-replace%E5%8F%AA%E8%83%BD%E4%BF%AE%E6%94%B9String%E7%B1%BB%E5%9E%8B"><span class="toc-number">5.</span> <span class="toc-text">regexp_replace只能修改String类型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B4%E5%9E%8B%E9%99%A4%E6%B3%95%E8%BF%90%E7%AE%97"><span class="toc-number">6.</span> <span class="toc-text">整型除法运算</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Use-CAST-when-dividing-integers"><span class="toc-number">6.0.1.</span> <span class="toc-text">Use CAST when dividing integers</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Array%E7%B1%BB%E5%9E%8B%E7%9A%84%E7%BB%86%E8%8A%82"><span class="toc-number">7.</span> <span class="toc-text">Array类型的细节</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LATERAL-VIEW-explode%E7%94%A8CROSS-JOIN-UNNEST%E6%9B%BF%E6%8D%A2"><span class="toc-number">8.</span> <span class="toc-text">LATERAL VIEW explode用CROSS JOIN UNNEST替换</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Use-UNNEST-to-expand-arrays-and-maps"><span class="toc-number">8.0.1.</span> <span class="toc-text">Use UNNEST to expand arrays and maps</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#LATERAL-VIEW-OUTER-explode%E7%9A%84%E6%9B%BF%E6%8D%A2"><span class="toc-number">8.0.2.</span> <span class="toc-text">LATERAL VIEW OUTER explode的替换</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%A8coalesce%E6%9B%BF%E4%BB%A3nvl"><span class="toc-number">9.</span> <span class="toc-text">用coalesce替代nvl</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%97%E8%BD%AC%E8%A1%8C"><span class="toc-number">10.</span> <span class="toc-text">列转行</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%A8approx-distinct%E4%BB%A3%E6%9B%BFCOUNT-DISTINCT"><span class="toc-number">11.</span> <span class="toc-text">用approx_distinct代替COUNT DISTINCT</span></a></li></ol>
+                    </div>
+                </span>
+            </div>
+        </div>
         
     </div>
 </aside>
@@ -534,10 +552,6 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">Big Data,Presto</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">Python</a>
               </li>
              
@@ -579,6 +593,14 @@ MathJax.Hub.Queue(function() {
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">算法</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">Big Data</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">Presto</a>
               </li>
             
             <div class="clearfix"></div>
