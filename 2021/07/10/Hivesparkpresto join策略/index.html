@@ -6,16 +6,19 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://woaixiaoyuyu.github.io">
-  <title>xiaoyuyulala</title>
+  <title>Hive/spark/presto join策略 | xiaoyuyulala</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="wo~ai~xiaoyuyu">
-<meta property="og:type" content="website">
-<meta property="og:title" content="xiaoyuyulala">
-<meta property="og:url" content="http://woaixiaoyuyu.github.io/index.html">
+  <meta name="description" content="对hive&#x2F;spark-sql&#x2F;presto中的join使用时的策略进行一些分析和理解。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hive&#x2F;spark&#x2F;presto join策略">
+<meta property="og:url" content="http://woaixiaoyuyu.github.io/2021/07/10/Hivesparkpresto%20join%E7%AD%96%E7%95%A5/index.html">
 <meta property="og:site_name" content="xiaoyuyulala">
-<meta property="og:description" content="wo~ai~xiaoyuyu">
+<meta property="og:description" content="对hive&#x2F;spark-sql&#x2F;presto中的join使用时的策略进行一些分析和理解。">
 <meta property="og:locale">
+<meta property="article:published_time" content="2021-07-10T12:22:44.000Z">
+<meta property="article:modified_time" content="2021-07-10T12:22:46.464Z">
 <meta property="article:author" content="xiaoyuyu">
+<meta property="article:tag" content="Big Data">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternative" href="/atom.xml" title="xiaoyuyulala" type="application/atom+xml">
@@ -148,16 +151,14 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
-  
-    <article id="post-Hivesparkpresto join策略" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+            <article id="post-Hivesparkpresto join策略" class="article article-type-post " itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
         
   
-    <h1 itemprop="name">
-      <a class="article-title" href="/2021/07/10/Hivesparkpresto%20join%E7%AD%96%E7%95%A5/">Hive/spark/presto join策略</a>
+    <h1 class="article-title" itemprop="name">
+      Hive/spark/presto join策略
     </h1>
   
 
@@ -171,16 +172,116 @@
     <div class="article-entry" itemprop="articleBody">
       
         <p>对hive/spark-sql/presto中的join使用时的策略进行一些分析和理解。</p>
-        
-          <a class="article-more-a" href="/2021/07/10/Hivesparkpresto%20join%E7%AD%96%E7%95%A5/#more">more >></a>
-        
+<span id="more"></span>
+
+<p>大表选择big_table，小表选择small table</p>
+<h2 id="join"><a href="#join" class="headerlink" title="join"></a>join</h2><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">--hive/spark-sql</span></span><br><span class="line">explain</span><br><span class="line"><span class="keyword">select</span> <span class="built_in">max</span>(big.price) price,<span class="built_in">max</span>(small.size) size </span><br><span class="line"><span class="keyword">from</span> big_table big</span><br><span class="line"><span class="keyword">join</span> small <span class="keyword">table</span> small </span><br><span class="line"><span class="keyword">on</span> big.id<span class="operator">=</span>small.id_s <span class="keyword">and</span> big.date<span class="operator">=</span><span class="string">&#x27;2021-06-20&#x27;</span></span><br><span class="line"><span class="keyword">where</span> big.hour<span class="operator">=</span><span class="number">12</span></span><br><span class="line"><span class="keyword">group</span> <span class="keyword">by</span> big.event;</span><br><span class="line"></span><br><span class="line"><span class="comment">--presto，加上distributed看上去清楚点</span></span><br><span class="line">explain (TYPE DISTRIBUTED)</span><br><span class="line"><span class="keyword">select</span> <span class="built_in">max</span>(big.price) price,<span class="built_in">max</span>(small.size) size </span><br><span class="line"><span class="keyword">from</span> big_table big</span><br><span class="line"><span class="keyword">join</span> small <span class="keyword">table</span> small </span><br><span class="line"><span class="keyword">on</span> big.id<span class="operator">=</span>small.id_s <span class="keyword">and</span> big.date<span class="operator">=</span><span class="string">&#x27;2021-06-20&#x27;</span></span><br><span class="line"><span class="keyword">where</span> big.hour<span class="operator">=</span><span class="number">12</span></span><br><span class="line"><span class="keyword">group</span> <span class="keyword">by</span> big.event;</span><br></pre></td></tr></table></figure>
+
+<h3 id="hive"><a href="#hive" class="headerlink" title="hive"></a>hive</h3><p>执行计划如下。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br></pre></td><td class="code"><pre><span class="line">STAGE DEPENDENCIES:</span><br><span class="line">  Stage-6 is a root stage , consists of Stage-7, Stage-1</span><br><span class="line">  Stage-7 has a backup stage: Stage-1</span><br><span class="line">  Stage-4 depends on stages: Stage-7</span><br><span class="line">  Stage-2 depends on stages: Stage-1, Stage-4</span><br><span class="line">  Stage-1</span><br><span class="line">  Stage-0 depends on stages: Stage-2</span><br><span class="line"></span><br><span class="line">STAGE PLANS:</span><br><span class="line">  Stage: Stage-6</span><br><span class="line">    Conditional Operator</span><br><span class="line"></span><br><span class="line">  Stage: Stage-7</span><br><span class="line">    Map Reduce Local Work</span><br><span class="line">      Alias -&gt; Map Local Tables:</span><br><span class="line">        small</span><br><span class="line">          Fetch Operator</span><br><span class="line">            limit: -1</span><br><span class="line">      Alias -&gt; Map Local Operator Tree:</span><br><span class="line">        small</span><br><span class="line">          TableScan</span><br><span class="line">            alias: small</span><br><span class="line">            Statistics: Num rows: 4319769 Data size: 51837232 Basic stats: COMPLETE Column stats: NONE</span><br><span class="line">            Filter Operator</span><br><span class="line">              predicate: id_s is not null (type: boolean)</span><br><span class="line">              Statistics: Num rows: 2159885 Data size: 25918622 Basic stats: COMPLETE Column stats: NONE</span><br><span class="line">              HashTable Sink Operator</span><br><span class="line">                keys:</span><br><span class="line">                  0 UDFToLong(id) (type: bigint)</span><br><span class="line">                  1 id_s (type: bigint)</span><br><span class="line"></span><br><span class="line">  Stage: Stage-4</span><br><span class="line">    Map Reduce</span><br><span class="line">      Map Operator Tree:</span><br><span class="line">          TableScan</span><br><span class="line">            alias: big</span><br><span class="line">            Statistics: Num rows: 183001809488 Data size: 2196021713880 Basic stats: COMPLETE Column stats: NONE</span><br><span class="line">            Filter Operator</span><br><span class="line">              predicate: (UDFToLong(id) is not null and (hour = 12)) (type: boolean)</span><br><span class="line">              Statistics: Num rows: 45750452372 Data size: 549005428470 Basic stats: COMPLETE Column stats: NONE</span><br><span class="line">              Map Join Operator</span><br><span class="line">                condition map:</span><br><span class="line">                     Inner Join 0 to 1</span><br><span class="line">                keys:</span><br><span class="line">                  0 UDFToLong(id) (type: bigint)</span><br><span class="line">                  1 id_s (type: bigint)</span><br><span class="line">                outputColumnNames: _col27, _col77, _col93</span><br><span class="line">                Statistics: Num rows: 50325498699 Data size: 603905984406 Basic stats: COMPLETE Column stats: NONE</span><br><span class="line">                Group By Operator</span><br><span class="line">                  aggregations: max(_col27), max(_col93)</span><br><span class="line">                  keys: _col77 (type: string)</span><br><span class="line">                  mode: hash</span><br><span class="line">                  outputColumnNames: _col0, _col1, _col2</span><br><span class="line">                  Statistics: Num rows: 50325498699 Data size: 603905984406 Basic stats: COMPLETE Column stats: NONE</span><br><span class="line">                  File Output Operator</span><br><span class="line">                    compressed: true</span><br><span class="line">                    table:</span><br><span class="line">                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat</span><br><span class="line">                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat</span><br><span class="line">                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe</span><br><span class="line">      Local Work:</span><br><span class="line">        Map Reduce Local Work</span><br><span class="line"></span><br><span class="line">  Stage: Stage-2</span><br><span class="line">    Map Reduce</span><br><span class="line">      Map Operator Tree:</span><br><span class="line">          TableScan</span><br><span class="line">            Reduce Output Operator</span><br><span class="line">              key expressions: _col0 (type: string)</span><br><span class="line">              sort order: +</span><br><span class="line">              Map-reduce partition columns: _col0 (type: string)</span><br><span class="line">              Statistics: Num rows: 50325498699 Data size: 603905984406 Basic stats: COMPLETE Column stats: NONE</span><br><span class="line">              value expressions: _col1 (type: int), _col2 (type: int)</span><br><span class="line">      Reduce Operator Tree:</span><br><span class="line">        Group By Operator</span><br><span class="line">          aggregations: max(VALUE._col0), max(VALUE._col1)</span><br><span class="line">          keys: KEY._col0 (type: string)</span><br><span class="line">          mode: mergepartial</span><br><span class="line">          outputColumnNames: _col0, _col1, _col2</span><br><span class="line">          Statistics: Num rows: 25162749349 Data size: 301952992197 Basic stats: COMPLETE Column stats: NONE</span><br><span class="line">          Select Operator</span><br><span class="line">            expressions: _col1 (type: int), _col2 (type: int)</span><br><span class="line">            outputColumnNames: _col0, _col1</span><br><span class="line">            Statistics: Num rows: 25162749349 Data size: 301952992197 Basic stats: COMPLETE Column stats: NONE</span><br><span class="line">            File Output Operator</span><br><span class="line">              compressed: false</span><br><span class="line">              Statistics: Num rows: 25162749349 Data size: 301952992197 Basic stats: COMPLETE Column stats: NONE</span><br><span class="line">              table:</span><br><span class="line">                  input format: org.apache.hadoop.mapred.TextInputFormat</span><br><span class="line">                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat</span><br><span class="line">                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</span><br><span class="line"></span><br><span class="line">  Stage: Stage-1</span><br><span class="line">    Map Reduce</span><br><span class="line">      Map Operator Tree:</span><br><span class="line">          TableScan</span><br><span class="line">            alias: big</span><br><span class="line">            Statistics: Num rows: 183001809488 Data size: 2196021713880 Basic stats: COMPLETE Column stats: NONE</span><br><span class="line">            Filter Operator</span><br><span class="line">              predicate: (UDFToLong(id) is not null and (hour = 12)) (type: boolean)</span><br><span class="line">              Statistics: Num rows: 45750452372 Data size: 549005428470 Basic stats: COMPLETE Column stats: NONE</span><br><span class="line">              Reduce Output Operator</span><br><span class="line">                key expressions: UDFToLong(id) (type: bigint)</span><br><span class="line">                sort order: +</span><br><span class="line">                Map-reduce partition columns: UDFToLong(id) (type: bigint)</span><br><span class="line">                Statistics: Num rows: 45750452372 Data size: 549005428470 Basic stats: COMPLETE Column stats: NONE</span><br><span class="line">                value expressions: price (type: int), event (type: string)</span><br><span class="line">          TableScan</span><br><span class="line">            alias: small</span><br><span class="line">            Statistics: Num rows: 4319769 Data size: 51837232 Basic stats: COMPLETE Column stats: NONE</span><br><span class="line">            Filter Operator</span><br><span class="line">              predicate: id_s is not null (type: boolean)</span><br><span class="line">              Statistics: Num rows: 2159885 Data size: 25918622 Basic stats: COMPLETE Column stats: NONE</span><br><span class="line">              Reduce Output Operator</span><br><span class="line">                key expressions: id_s (type: bigint)</span><br><span class="line">                sort order: +</span><br><span class="line">                Map-reduce partition columns: id_s (type: bigint)</span><br><span class="line">                Statistics: Num rows: 2159885 Data size: 25918622 Basic stats: COMPLETE Column stats: NONE</span><br><span class="line">                value expressions: size (type: int)</span><br><span class="line">      Reduce Operator Tree:</span><br><span class="line">        Join Operator</span><br><span class="line">          condition map:</span><br><span class="line">               Inner Join 0 to 1</span><br><span class="line">          keys:</span><br><span class="line">            0 UDFToLong(id) (type: bigint)</span><br><span class="line">            1 id_s (type: bigint)</span><br><span class="line">          outputColumnNames: _col27, _col77, _col93</span><br><span class="line">          Statistics: Num rows: 50325498699 Data size: 603905984406 Basic stats: COMPLETE Column stats: NONE</span><br><span class="line">          Group By Operator</span><br><span class="line">            aggregations: max(_col27), max(_col93)</span><br><span class="line">            keys: _col77 (type: string)</span><br><span class="line">            mode: hash</span><br><span class="line">            outputColumnNames: _col0, _col1, _col2</span><br><span class="line">            Statistics: Num rows: 50325498699 Data size: 603905984406 Basic stats: COMPLETE Column stats: NONE</span><br><span class="line">            File Output Operator</span><br><span class="line">              compressed: true</span><br><span class="line">              table:</span><br><span class="line">                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat</span><br><span class="line">                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat</span><br><span class="line">                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe</span><br><span class="line"></span><br><span class="line">  Stage: Stage-0</span><br><span class="line">    Fetch Operator</span><br><span class="line">      limit: -1</span><br><span class="line">      Processor Tree:</span><br><span class="line">        ListSink</span><br></pre></td></tr></table></figure>
+
+<p>![image-20210709175411342](/Users/louwen/Library/Application Support/typora-user-images/image-20210709175411342.png)</p>
+<p>可以看到按照常理来说，在普通的join当中，左边的表的内容会被加载进内存，但是在本次案例中，依然是右边的表（small table）的内容被加载进了内存。当我们更换join的前后顺序以后，发现依然是小表加载进了内存，因为在hive集群上开启了hive优化，默认将小表入读内存，所以执行普通的join时不用考虑表名的书写顺序。</p>
+<h3 id="spark"><a href="#spark" class="headerlink" title="spark"></a>spark</h3><p>大表在左，执行如下。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">== Physical Plan ==</span><br><span class="line">*(3) HashAggregate(keys=[event#81], functions=[max(price#31), max(size#94)])</span><br><span class="line">+- Exchange hashpartitioning(event#81, 200)</span><br><span class="line">   +- *(2) HashAggregate(keys=[event#81], functions=[partial_max(price#31), partial_max(size#94)])</span><br><span class="line">      +- *(2) Project [price#31, event#81, size#94]</span><br><span class="line">         +- *(2) BroadcastHashJoin [cast(id#27 as bigint)], [id_s#88L], Inner, BuildRight</span><br><span class="line">            :- *(2) Project [id#27, price#31, event#81]</span><br><span class="line">            :  +- *(2) Filter ((isnotnull(hour#6) &amp;&amp; (cast(hour#6 as int) = 12)) &amp;&amp; isnotnull(id#27))</span><br><span class="line">            :     +- *(2) FileScan orc big_table[hour#6,id#27,price#31,date#80,event#81] Batched: true, Format: ORC, Location: PrunedInMemoryFileIndex[viewfs://ss-hadoop/mvad/warehouse/mediav_base.db/maxfact/date=2021-06-20/..., PartitionCount: 4, PartitionFilters: [isnotnull(date#80), (date#80 = 2021-06-20)], PushedFilters: [IsNotNull(hour), IsNotNull(id)], ReadSchema: struct&lt;hour:tinyint,id:int,price:int&gt;</span><br><span class="line">            +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, false]))</span><br><span class="line">               +- *(1) Filter isnotnull(id_s#88L)</span><br><span class="line">                  +- Scan hive small table [id_s#88L, size#94], HiveTableRelation `mysql`.`mediav_base_adspace`, org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, [id#82L, name#83, qihu_adspaceid#84L, memo#85, url#86, fixedbannerid#87L, id_s#88L, channelid#89L, disabled#90, width#91, height#92, dimension#93, size#94, bannertypeid#95, pagetype#96, placement#97, spellrate#98, pv#99L, uv#100L, manualflag#101, wh#102, virtual#103L, sflag#104, acceptsize#105, ... 75 more fields]</span><br><span class="line">Time taken: 16.792 seconds, Fetched 1 row(s)</span><br></pre></td></tr></table></figure>
+
+<p>大表在右，执行如下。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">== Physical Plan ==</span><br><span class="line">*(3) HashAggregate(keys=[event#445], functions=[max(price#395), max(size#281)])</span><br><span class="line">+- Exchange hashpartitioning(event#445, 200)</span><br><span class="line">   +- *(2) HashAggregate(keys=[event#445], functions=[partial_max(price#395), partial_max(size#281)])</span><br><span class="line">      +- *(2) Project [size#281, price#395, event#445]</span><br><span class="line">         +- *(2) BroadcastHashJoin [id_s#275L], [cast(id#391 as bigint)], Inner, BuildLeft</span><br><span class="line">            :- BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, false]))</span><br><span class="line">            :  +- *(1) Filter isnotnull(id_s#275L)</span><br><span class="line">            :     +- Scan hive small table [id_s#275L, size#281], HiveTableRelation `mysql`.`mediav_base_adspace`, org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe, [id#269L, name#270, qihu_adspaceid#271L, memo#272, url#273, fixedbannerid#274L, id_s#275L, channelid#276L, disabled#277, width#278, height#279, dimension#280, size#281, bannertypeid#282, pagetype#283, placement#284, spellrate#285, pv#286L, uv#287L, manualflag#288, wh#289, virtual#290L, sflag#291, acceptsize#292, ... 75 more fields]</span><br><span class="line">            +- *(2) Project [id#391, price#395, event#445]</span><br><span class="line">               +- *(2) Filter ((isnotnull(hour#370) &amp;&amp; (cast(hour#370 as int) = 12)) &amp;&amp; isnotnull(id#391))</span><br><span class="line">                  +- *(2) FileScan orc big_table[hour#370,id#391,price#395,date#444,event#445] Batched: true, Format: ORC, Location: PrunedInMemoryFileIndex[viewfs://ss-hadoop/mvad/warehouse/mediav_base.db/maxfact/date=2021-06-20/..., PartitionCount: 4, PartitionFilters: [isnotnull(date#444), (date#444 = 2021-06-20)], PushedFilters: [IsNotNull(hour), IsNotNull(id)], ReadSchema: struct&lt;hour:tinyint,id:int,price:int&gt;</span><br><span class="line">Time taken: 10.342 seconds, Fetched 1 row(s)</span><br></pre></td></tr></table></figure>
+
+<p>整理一下执行流程，如下。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">--big join small</span><br><span class="line">BroadcastHashJoin [cast(id#27 as bigint)], [id_s#88L], Inner, BuildRight</span><br><span class="line"></span><br><span class="line">FileScan orc big_table Batched: true Location: PrunedInMemoryFileIndex</span><br><span class="line"></span><br><span class="line">BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, false]))</span><br><span class="line"></span><br><span class="line">Scan hive small table</span><br><span class="line"></span><br><span class="line">--small join big</span><br><span class="line">BroadcastHashJoin [id_s#275L], [cast(id#391 as bigint)], Inner, BuildLeft</span><br><span class="line"></span><br><span class="line">BroadcastExchange HashedRelationBroadcastMode(List(input[0, bigint, false]))</span><br><span class="line"></span><br><span class="line">Scan hive small table</span><br><span class="line"></span><br><span class="line">FileScan orc big_table Batched: true Location: PrunedInMemoryFileIndex</span><br></pre></td></tr></table></figure>
+
+<p>可以看到关键部分的结果是一样的，因为开启了一些默认优化的机制。</p>
+<p>Spark will perform (or be forced by us to perform) joins in two different ways: either using <strong>Sort Merge Joins</strong> if we are joining two big tables, or <strong>Broadcast Joins</strong> if at least one of the datasets involved is small enough to be stored in the memory of the single all executors.</p>
+<h4 id="Broadcast-Hash-Join"><a href="#Broadcast-Hash-Join" class="headerlink" title="Broadcast Hash Join"></a>Broadcast Hash Join</h4><p>![image-20210710194653628](/Users/louwen/Library/Application Support/typora-user-images/image-20210710194653628.png)</p>
+<p>Broadcast Hash Join 的实现是将小表的数据广播到 Spark 所有的 Executor 端，这个广播过程和我们自己去广播数</p>
+<p>据没什么区别：</p>
+<ul>
+<li>利用 collect 算子将小表的数据从 Executor 端拉到 Driver 端 </li>
+<li>在 Driver 端调用 sparkContext.broadcast 广播到所有 Executor 端 </li>
+<li>在 Executor 端使用广播的数据与大表进行 Join 操作（实际上是执行map操作）</li>
+</ul>
+<p>这种 Join 策略避免了 Shuffle 操作。一般而言，Broadcast Hash Join 会比其他 Join 策略执行的要快。</p>
+<p>使用这种 Join 策略必须满足以下条件：</p>
+<ul>
+<li>小表的数据必须很小，可以通过 spark.sql.autoBroadcastJoinThreshold 参数来配置，默认是 10MB</li>
+<li>如果内存比较大，可以将阈值适当加大</li>
+<li>将 spark.sql.autoBroadcastJoinThreshold 参数设置为 -1，可以关闭这种连接方式</li>
+<li>只能用于等值 Join，不要求参与 Join 的 keys 可排序</li>
+</ul>
+<h4 id="Shuffle-Hash-Join"><a href="#Shuffle-Hash-Join" class="headerlink" title="Shuffle Hash Join"></a>Shuffle Hash Join</h4><p>当表中的数据比较大，又不适合使用广播，这个时候就可以考虑使用 Shuffle Hash Join。</p>
+<p>Shuffle Hash Join 同样是在大表和小表进行 Join 的时候选择的一种策略。它的计算思想是：把大表和小表按照相同的分区算法和分区数进行分区（根据参与 Join 的 keys 进行分区），这样就保证了 hash 值一样的数据都分发到同一个分区中，然后在同一个 Executor 中两张表 hash 值一样的分区就可以在本地进行 hash Join 了。在进行 Join 之前，还会对小表的分区构建 Hash Map。Shuffle hash join 利用了分治思想，把大问题拆解成小问题去解决。</p>
+<p>![image-20210710195330529](/Users/louwen/Library/Application Support/typora-user-images/image-20210710195330529.png)</p>
+<p>要启用 Shuffle Hash Join 必须满足以下条件：</p>
+<ul>
+<li>仅支持等值 Join，不要求参与 Join 的 Keys 可排序</li>
+<li>spark.sql.join.preferSortMergeJoin 参数必须设置为 false，参数是从 Spark 2.0.0 版本引入的，默认值为true，也就是默认情况下选择 Sort Merge Join小表的大小（plan.stats.sizeInBytes）必须小于 spark.sql.autoBroadcastJoinThreshold *spark.sql.shuffle.partitions（默认值200mb）</li>
+<li>而且小表大小（stats.sizeInBytes）的三倍必须小于等于大表的大小（stats.sizeInBytes），也就是a.stats.sizeInBytes * 3 &lt; = b.stats.sizeInBytes</li>
+</ul>
+<h4 id="Shuffle-Sort-Merge-Joins"><a href="#Shuffle-Sort-Merge-Joins" class="headerlink" title="Shuffle Sort Merge Joins"></a>Shuffle Sort Merge Joins</h4><p>前面两种 Join 策略对表的大小都有条件的，如果参与 Join 的表都很大，这时候就得考虑用 Shuffle Sort Merge Join了。</p>
+<p>Shuffle Sort Merge Join 的实现思想：</p>
+<ul>
+<li>将两张表按照 join key 进行shuffle，保证join key值相同的记录会被分在相应的分区对每个分区内的数据进行排序</li>
+<li>排序后再对相应的分区内的记录进行连接</li>
+<li>无论分区有多大，Sort Merge Join都不用把一侧的数据全部加载到内存中，而是即用即丢；因为两个序列都有序。从头遍历，碰到key相同的就输出，如果不同，左边小就继续取左边，反之取右边。从而大大提高了大数据量下sql join的稳定性。</li>
+</ul>
+<p>![image-20210710195902682](/Users/louwen/Library/Application Support/typora-user-images/image-20210710195902682.png)</p>
+<p>要启用 Shuffle Sort Merge Join 必须满足以下条件：</p>
+<ul>
+<li>仅支持等值 Join，并且要求参与 Join 的 Keys 可排序</li>
+</ul>
+<h4 id="Cartesian-product-join"><a href="#Cartesian-product-join" class="headerlink" title="Cartesian product join"></a>Cartesian product join</h4><p>如果 Spark 中两张参与 Join 的表没指定连接条件，那么会产生 Cartesian product join，这个 Join 得到的结果其实就是两张表行数的乘积。</p>
+<p>因为数据量普遍很大，严禁使用！</p>
+<h3 id="presto"><a href="#presto" class="headerlink" title="presto"></a>presto</h3><p>执行计划关键是下面这段。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">Fragment 2 [HASH]</span><br><span class="line">    Output layout: [event, max_15, max_14, $hashvalue_22]</span><br><span class="line">    Output partitioning: HASH [event][$hashvalue_22]</span><br><span class="line">    Stage Execution Strategy: UNGROUPED_EXECUTION</span><br><span class="line">    - Aggregate(PARTIAL)[event][$hashvalue_22] =&gt; [event:varchar, $hashvalue_22:bigint, max_15:bigint, max_14:bigint]</span><br><span class="line">            max_15 := &quot;&quot;presto.default.max&quot;&quot;((size))</span><br><span class="line">            max_14 := &quot;&quot;presto.default.max&quot;&quot;((price))</span><br><span class="line">        - Project[projectLocality = LOCAL] =&gt; [price:integer, event:varchar, size:integer, $hashvalue_22:bigint]</span><br><span class="line">                Estimates: &#123;rows: ? (?), cpu: ?, memory: 0.00, network: ?&#125;</span><br><span class="line">                $hashvalue_22 := combine_hash(BIGINT 0, COALESCE($operator$hash_code(event), BIGINT 0))</span><br><span class="line">            - InnerJoin[(&quot;&quot;expr&quot;&quot; = &quot;&quot;id_s&quot;&quot;)][$hashvalue_17, $hashvalue_19] =&gt; [price:integer, event:varchar, size:integer]</span><br><span class="line">                    Estimates: &#123;rows: ? (?), cpu: ?, memory: 0.00, network: ?&#125;</span><br><span class="line">                    Distribution: PARTITIONED</span><br><span class="line">                - RemoteSource[3] =&gt; [price:integer, event:varchar, expr:bigint, $hashvalue_17:bigint]</span><br><span class="line">                - LocalExchange[HASH][$hashvalue_19] (id_s) =&gt; [id_s:bigint, size:integer, $hashvalue_19:bigint]</span><br><span class="line">                        Estimates: &#123;rows: 0 (0B), cpu: 0.00, memory: 0.00, network: 0.00&#125;</span><br><span class="line">                    - RemoteSource[4] =&gt; [id_s:bigint, size:integer, $hashvalue_20:bigint]</span><br></pre></td></tr></table></figure>
+
+<p>Presto中 join 的默认算法是broadcast join，即将 join 左边的表分割到多个 worker ，然后将join 右边的表数据整个复制一份发送到每个worker进行计算。如果右边的表数据量太大，则可能会报内存溢出错误。</p>
+<p>在默认情况下，presto使用distributed hash join算法，在这种算法中，join左右两边的表都会根据join键的值进行分区。左表的每个分区都会被通过网络传入到右表所在分区的worker节点上。也就是说，在进行join关联的时候，会先把右表的所有分区全部分布到各个计算节点上保存，然后等待将左表中的各个分区依次通过网络传输stream 到相应的计算节点上进行计算。由于右表的所有分区需要全部分布到各个节点上进行存储，所以有一个限制：就是集群中所有内存的代销一定要大于右表的大小。</p>
+<p>如果你在执行join查询的时候看到错误：task exceeded max memory size，那么这经常意味着join连接的右表大于集群所有内存的大小。presto不会自动进行join两边表 顺序的优化，因此在执行join查询的时候，请确保<strong>大表放在join的左边</strong>，小表放在join右边。</p>
+<p>必须注意这一点，因为没有像hive那样开启优化–默认将小表放入内存。</p>
+
       
 	  
 
 
-  <div class="declare" hidden="hidden"></div>
+  <div class="declare">
+    <strong>本文作者：</strong>
+    
+      xiaoyuyu
+    
+    <br>
+    <strong>本文链接：</strong>
+    http://woaixiaoyuyu.github.io/2021/07/10/Hivesparkpresto%20join%E7%AD%96%E7%95%A5/
+    <br>
+    <strong>版权声明：</strong>
+    本作品采用
+    <a rel="license noopener" target="_blank" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议</a>
+    进行许可。转载请注明出处！
+    
+  </div>
 
 
+      
+        <div class="page-reward">
+          <a href="javascript:;" class="page-reward-btn tooltip-top">
+            <div class="tooltip tooltip-east">
+            <span class="tooltip-item">
+              赏
+            </span>
+            <span class="tooltip-content">
+              <span class="tooltip-text">
+                <span class="tooltip-inner">
+                  <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢你请我吃糖果<i class="icon icon-quo-right"></i></p>
+                  <div class="reward-box">
+                    
+                    
+                  </div>
+                </span>
+              </span>
+            </span>
+          </div>
+          </a>
+        </div>
       
     </div>
     <div class="article-info article-info-index">
@@ -200,16 +301,75 @@
       
 
       
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2021/07/10/Hivesparkpresto%20join%E7%AD%96%E7%95%A5/">展开全文 >></a>
-        </p>
-      
 
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
+        </div>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//pan.baidu.com/share/qrcode?url=http://woaixiaoyuyu.github.io/2021/07/10/Hivesparkpresto%20join%E7%AD%96%E7%95%A5/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
       
       <div class="clearfix"></div>
     </div>
   </div>
 </article>
+
+  
+<nav id="article-nav">
+  
+  
+    <a href="/2021/07/09/Presto%20migrating%20from%20Hive/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">Presto migrating from Hive</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
 
 <aside class="wrap-side-operation">
     <div class="mod-side-operation">
@@ -224,759 +384,32 @@
         </div>
         
         
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-Presto migrating from Hive" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2021/07/09/Presto%20migrating%20from%20Hive/">Presto migrating from Hive</a>
-    </h1>
-  
-
-        
-        <a href="/2021/07/09/Presto%20migrating%20from%20Hive/" class="archive-article-date">
-  	<time datetime="2021-07-09T13:17:12.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-07-09</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Hive向Presto迁移需要注意的tips</p>
-        
-          <a class="article-more-a" href="/2021/07/09/Presto%20migrating%20from%20Hive/#more">more >></a>
-        
-      
-	  
-
-
-  <div class="declare" hidden="hidden"></div>
-
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">Big Data</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">Presto</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2021/07/09/Presto%20migrating%20from%20Hive/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
+        <div class="toc-container tooltip-left">
+            <i class="icon-font icon-category"></i>
+            <div class="tooltip tooltip-east">
+                <span class="tooltip-item">
+                </span>
+                <span class="tooltip-content">
+                    <div class="toc-article">
+                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#join"><span class="toc-number">1.</span> <span class="toc-text">join</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#hive"><span class="toc-number">1.1.</span> <span class="toc-text">hive</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#spark"><span class="toc-number">1.2.</span> <span class="toc-text">spark</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Broadcast-Hash-Join"><span class="toc-number">1.2.1.</span> <span class="toc-text">Broadcast Hash Join</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Shuffle-Hash-Join"><span class="toc-number">1.2.2.</span> <span class="toc-text">Shuffle Hash Join</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Shuffle-Sort-Merge-Joins"><span class="toc-number">1.2.3.</span> <span class="toc-text">Shuffle Sort Merge Joins</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Cartesian-product-join"><span class="toc-number">1.2.4.</span> <span class="toc-text">Cartesian product join</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#presto"><span class="toc-number">1.3.</span> <span class="toc-text">presto</span></a></li></ol></li></ol>
+                    </div>
+                </span>
             </div>
         </div>
         
-        
     </div>
 </aside>
 
 
 
-
-  
-    <article id="post-Flink 入门案例" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2021/07/08/Flink%20%E5%85%A5%E9%97%A8%E6%A1%88%E4%BE%8B/">Flink 入门案例</a>
-    </h1>
-  
-
-        
-        <a href="/2021/07/08/Flink%20%E5%85%A5%E9%97%A8%E6%A1%88%E4%BE%8B/" class="archive-article-date">
-  	<time datetime="2021-07-08T12:15:34.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-07-08</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Flink 入门案例，对官方文档进行了梳理和部分翻译。</p>
-<p>未完待续。</p>
-        
-          <a class="article-more-a" href="/2021/07/08/Flink%20%E5%85%A5%E9%97%A8%E6%A1%88%E4%BE%8B/#more">more >></a>
-        
-      
-	  
-
-
-  <div class="declare" hidden="hidden"></div>
-
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">Big Data</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Flink</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2021/07/08/Flink%20%E5%85%A5%E9%97%A8%E6%A1%88%E4%BE%8B/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-大数处理" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2021/07/04/%E5%A4%A7%E6%95%B0%E5%A4%84%E7%90%86/">大数处理</a>
-    </h1>
-  
-
-        
-        <a href="/2021/07/04/%E5%A4%A7%E6%95%B0%E5%A4%84%E7%90%86/" class="archive-article-date">
-  	<time datetime="2021-07-04T10:40:11.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-07-04</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>大数的处理是算法中很常见的问题，关键是笔试也容易考，记录一下常见的考法</p>
-        
-          <a class="article-more-a" href="/2021/07/04/%E5%A4%A7%E6%95%B0%E5%A4%84%E7%90%86/#more">more >></a>
-        
-      
-	  
-
-
-  <div class="declare" hidden="hidden"></div>
-
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">算法</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2021/07/04/%E5%A4%A7%E6%95%B0%E5%A4%84%E7%90%86/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-Spark常用代码段" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2021/07/03/Spark%E5%B8%B8%E7%94%A8%E4%BB%A3%E7%A0%81%E6%AE%B5/">Spark/Scala note</a>
-    </h1>
-  
-
-        
-        <a href="/2021/07/03/Spark%E5%B8%B8%E7%94%A8%E4%BB%A3%E7%A0%81%E6%AE%B5/" class="archive-article-date">
-  	<time datetime="2021-07-03T12:17:24.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-07-03</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Spark 常用代码段和Scala的一些笔记</p>
-        
-          <a class="article-more-a" href="/2021/07/03/Spark%E5%B8%B8%E7%94%A8%E4%BB%A3%E7%A0%81%E6%AE%B5/#more">more >></a>
-        
-      
-	  
-
-
-  <div class="declare" hidden="hidden"></div>
-
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">Big Data</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Spark</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2021/07/03/Spark%E5%B8%B8%E7%94%A8%E4%BB%A3%E7%A0%81%E6%AE%B5/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-算法唯手熟尔5月" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/05/01/%E7%AE%97%E6%B3%95%E5%94%AF%E6%89%8B%E7%86%9F%E5%B0%945%E6%9C%88/">算法唯手熟尔5月</a>
-    </h1>
-  
-
-        
-        <a href="/2020/05/01/%E7%AE%97%E6%B3%95%E5%94%AF%E6%89%8B%E7%86%9F%E5%B0%945%E6%9C%88/" class="archive-article-date">
-  	<time datetime="2020-05-01T01:45:33.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-05-01</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>keep going keep going</p>
-        
-          <a class="article-more-a" href="/2020/05/01/%E7%AE%97%E6%B3%95%E5%94%AF%E6%89%8B%E7%86%9F%E5%B0%945%E6%9C%88/#more">more >></a>
-        
-      
-	  
-
-
-  <div class="declare" hidden="hidden"></div>
-
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">算法</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2020/05/01/%E7%AE%97%E6%B3%95%E5%94%AF%E6%89%8B%E7%86%9F%E5%B0%945%E6%9C%88/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-算法唯手熟尔4月" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/04/09/%E7%AE%97%E6%B3%95%E5%94%AF%E6%89%8B%E7%86%9F%E5%B0%944%E6%9C%88/">算法唯手熟尔4月</a>
-    </h1>
-  
-
-        
-        <a href="/2020/04/09/%E7%AE%97%E6%B3%95%E5%94%AF%E6%89%8B%E7%86%9F%E5%B0%944%E6%9C%88/" class="archive-article-date">
-  	<time datetime="2020-04-09T03:44:59.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-09</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>4月不做咸鱼，更多的是为了补上一些语法上的坑</p>
-        
-          <a class="article-more-a" href="/2020/04/09/%E7%AE%97%E6%B3%95%E5%94%AF%E6%89%8B%E7%86%9F%E5%B0%944%E6%9C%88/#more">more >></a>
-        
-      
-	  
-
-
-  <div class="declare" hidden="hidden"></div>
-
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">算法</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2020/04/09/%E7%AE%97%E6%B3%95%E5%94%AF%E6%89%8B%E7%86%9F%E5%B0%944%E6%9C%88/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-Go-container-list" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/04/08/Go-container-list/">Go_container/list</a>
-    </h1>
-  
-
-        
-        <a href="/2020/04/08/Go-container-list/" class="archive-article-date">
-  	<time datetime="2020-04-08T06:09:30.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-04-08</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>看一下这个库的源代码</p>
-        
-          <a class="article-more-a" href="/2020/04/08/Go-container-list/#more">more >></a>
-        
-      
-	  
-
-
-  <div class="declare" hidden="hidden"></div>
-
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">GO</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2020/04/08/Go-container-list/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-Go-crawler" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/03/26/Go-crawler/">Go_crawler</a>
-    </h1>
-  
-
-        
-        <a href="/2020/03/26/Go-crawler/" class="archive-article-date">
-  	<time datetime="2020-03-26T04:28:01.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-03-26</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>借助goquery写个爬虫玩玩</p>
-        
-          <a class="article-more-a" href="/2020/03/26/Go-crawler/#more">more >></a>
-        
-      
-	  
-
-
-  <div class="declare" hidden="hidden"></div>
-
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">GO</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2020/03/26/Go-crawler/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-bubble-list" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2020/03/22/bubble-list/">bubble_list</a>
-    </h1>
-  
-
-        
-        <a href="/2020/03/22/bubble-list/" class="archive-article-date">
-  	<time datetime="2020-03-22T02:37:43.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2020-03-22</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Q1mi老师的小清单程序的练习和注释</p>
-        
-          <a class="article-more-a" href="/2020/03/22/bubble-list/#more">more >></a>
-        
-      
-	  
-
-
-  <div class="declare" hidden="hidden"></div>
-
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">GO</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2020/03/22/bubble-list/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
   
   
-    <nav id="page-nav">
-      <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="space">&hellip;</span><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/2/">Next &amp;raquo;</a>
-    </nav>
+  
+
+  
+
+  
+
   
 
 
@@ -1007,8 +440,8 @@
     <script>
 	var yiliaConfig = {
 		mathjax: true,
-		isHome: true,
-		isPost: false,
+		isHome: false,
+		isPost: true,
 		isArchive: false,
 		isTag: false,
 		isCategory: false,
