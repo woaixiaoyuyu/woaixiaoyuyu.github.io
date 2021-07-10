@@ -18,9 +18,9 @@
 <meta property="og:image" content="https://github.com/woaixiaoyuyu/images/raw/main/join.jpg">
 <meta property="og:image" content="https://github.com/woaixiaoyuyu/images/raw/main/broadcast_join.jpg">
 <meta property="og:image" content="https://github.com/woaixiaoyuyu/images/raw/main/shuffle_join.jpg">
-<meta property="og:image" content="https://github.com/woaixiaoyuyu/images/raw/main/sort_merge.jpg">
+<meta property="og:image" content="https://raw.githubusercontent.com/woaixiaoyuyu/images/main/sort_merge.jpg?token=AJFXTAT2VVRKZ2GECH3LUK3A5GOT2">
 <meta property="article:published_time" content="2021-07-10T12:22:44.000Z">
-<meta property="article:modified_time" content="2021-07-10T12:53:34.830Z">
+<meta property="article:modified_time" content="2021-07-10T13:13:52.359Z">
 <meta property="article:author" content="xiaoyuyu">
 <meta property="article:tag" content="Big Data">
 <meta name="twitter:card" content="summary">
@@ -230,7 +230,7 @@
 <li>排序后再对相应的分区内的记录进行连接</li>
 <li>无论分区有多大，Sort Merge Join都不用把一侧的数据全部加载到内存中，而是即用即丢；因为两个序列都有序。从头遍历，碰到key相同的就输出，如果不同，左边小就继续取左边，反之取右边。从而大大提高了大数据量下sql join的稳定性。</li>
 </ul>
-<p><img src="https://github.com/woaixiaoyuyu/images/raw/main/sort_merge.jpg" alt="sort_merge"></p>
+<p><img src="https://raw.githubusercontent.com/woaixiaoyuyu/images/main/sort_merge.jpg?token=AJFXTAT2VVRKZ2GECH3LUK3A5GOT2" alt="sort_merge"></p>
 <p>要启用 Shuffle Sort Merge Join 必须满足以下条件：</p>
 <ul>
 <li>仅支持等值 Join，并且要求参与 Join 的 Keys 可排序</li>
