@@ -16,11 +16,11 @@
 <meta property="og:description" content="对hive&#x2F;spark-sql&#x2F;presto中的join使用时的策略进行一些分析和理解。">
 <meta property="og:locale">
 <meta property="og:image" content="https://z3.ax1x.com/2021/07/10/WpG2fe.jpg">
-<meta property="og:image" content="https://imgtu.com/i/WpGfld">
-<meta property="og:image" content="https://imgtu.com/i/WpGWSH">
-<meta property="og:image" content="https://imgtu.com/i/WpGgYD">
+<meta property="og:image" content="https://z3.ax1x.com/2021/07/10/WpGfld.jpg">
+<meta property="og:image" content="https://z3.ax1x.com/2021/07/10/WpGWSH.jpg">
+<meta property="og:image" content="https://z3.ax1x.com/2021/07/10/WpGgYD.jpg">
 <meta property="article:published_time" content="2021-07-10T12:22:44.000Z">
-<meta property="article:modified_time" content="2021-07-10T13:42:20.482Z">
+<meta property="article:modified_time" content="2021-07-10T13:43:26.357Z">
 <meta property="article:author" content="xiaoyuyu">
 <meta property="article:tag" content="Big Data">
 <meta name="twitter:card" content="summary">
@@ -198,7 +198,7 @@
 
 <p>可以看到关键部分的结果是一样的，因为开启了一些默认优化的机制。</p>
 <p>Spark will perform (or be forced by us to perform) joins in two different ways: either using <strong>Sort Merge Joins</strong> if we are joining two big tables, or <strong>Broadcast Joins</strong> if at least one of the datasets involved is small enough to be stored in the memory of the single all executors.</p>
-<h4 id="Broadcast-Hash-Join"><a href="#Broadcast-Hash-Join" class="headerlink" title="Broadcast Hash Join"></a>Broadcast Hash Join</h4><p><img src="https://imgtu.com/i/WpGfld" alt="broadcast"></p>
+<h4 id="Broadcast-Hash-Join"><a href="#Broadcast-Hash-Join" class="headerlink" title="Broadcast Hash Join"></a>Broadcast Hash Join</h4><p><a target="_blank" rel="noopener" href="https://imgtu.com/i/WpGfld"><img src="https://z3.ax1x.com/2021/07/10/WpGfld.jpg" alt="WpGfld.jpg"></a></p>
 <p>Broadcast Hash Join 的实现是将小表的数据广播到 Spark 所有的 Executor 端，这个广播过程和我们自己去广播数</p>
 <p>据没什么区别：</p>
 <ul>
@@ -216,7 +216,7 @@
 </ul>
 <h4 id="Shuffle-Hash-Join"><a href="#Shuffle-Hash-Join" class="headerlink" title="Shuffle Hash Join"></a>Shuffle Hash Join</h4><p>当表中的数据比较大，又不适合使用广播，这个时候就可以考虑使用 Shuffle Hash Join。</p>
 <p>Shuffle Hash Join 同样是在大表和小表进行 Join 的时候选择的一种策略。它的计算思想是：把大表和小表按照相同的分区算法和分区数进行分区（根据参与 Join 的 keys 进行分区），这样就保证了 hash 值一样的数据都分发到同一个分区中，然后在同一个 Executor 中两张表 hash 值一样的分区就可以在本地进行 hash Join 了。在进行 Join 之前，还会对小表的分区构建 Hash Map。Shuffle hash join 利用了分治思想，把大问题拆解成小问题去解决。</p>
-<p><img src="https://imgtu.com/i/WpGWSH" alt="shuffle_join"></p>
+<p><a target="_blank" rel="noopener" href="https://imgtu.com/i/WpGWSH"><img src="https://z3.ax1x.com/2021/07/10/WpGWSH.jpg" alt="WpGWSH.jpg"></a></p>
 <p>要启用 Shuffle Hash Join 必须满足以下条件：</p>
 <ul>
 <li>仅支持等值 Join，不要求参与 Join 的 Keys 可排序</li>
@@ -230,7 +230,7 @@
 <li>排序后再对相应的分区内的记录进行连接</li>
 <li>无论分区有多大，Sort Merge Join都不用把一侧的数据全部加载到内存中，而是即用即丢；因为两个序列都有序。从头遍历，碰到key相同的就输出，如果不同，左边小就继续取左边，反之取右边。从而大大提高了大数据量下sql join的稳定性。</li>
 </ul>
-<p><img src="https://imgtu.com/i/WpGgYD" alt="sort_merge"></p>
+<p><a target="_blank" rel="noopener" href="https://imgtu.com/i/WpGgYD"><img src="https://z3.ax1x.com/2021/07/10/WpGgYD.jpg" alt="WpGgYD.jpg"></a></p>
 <p>要启用 Shuffle Sort Merge Join 必须满足以下条件：</p>
 <ul>
 <li>仅支持等值 Join，并且要求参与 Join 的 Keys 可排序</li>
