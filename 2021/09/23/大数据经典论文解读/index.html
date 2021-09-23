@@ -15,11 +15,19 @@
 <meta property="og:site_name" content="xiaoyuyulala">
 <meta property="og:description" content="切勿浮沙筑高台 参考链接1 参考链接2">
 <meta property="og:locale">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/e0/32/e069a97c337d583yyddb87fe51992232.jpg?wh=1920x1279">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/da/28/daa602b79dacbd377f7242a3cf345728.jpg?wh=1920x734">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/cc/d5/ccc40c7c9770f7e82594cb9d5dd399d5.jpg?wh=2000x1780">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/0f/b9/0f55142af70b3f40fa5b9b8a3f24c9b9.jpg?wh=1920x1709">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/36/c8/36f0ccc02181328843a1d795a61d8ec8.jpg?wh=2000x1780">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/fd/e0/fdc694d707095e8d73dc18521676c0e0.jpg?wh=2000x1725">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/92/2d/928e1c25e9b4332d9d897b40de8a972d.jpg?wh=1920x1213">
 <meta property="article:published_time" content="2021-09-23T01:40:32.000Z">
-<meta property="article:modified_time" content="2021-09-23T02:54:03.834Z">
+<meta property="article:modified_time" content="2021-09-23T03:43:26.776Z">
 <meta property="article:author" content="xiaoyuyu">
 <meta property="article:tag" content="Big Data">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://static001.geekbang.org/resource/image/e0/32/e069a97c337d583yyddb87fe51992232.jpg?wh=1920x1279">
   
     <link rel="alternative" href="/atom.xml" title="xiaoyuyulala" type="application/atom+xml">
   
@@ -176,8 +184,28 @@
 <p><a target="_blank" rel="noopener" href="http://duanple.com/?p=170">参考链接2</a></p>
 <span id="more"></span>
 
-
-
+<h2 id="大数据技术的核心理念"><a href="#大数据技术的核心理念" class="headerlink" title="大数据技术的核心理念"></a>大数据技术的核心理念</h2><p>其实“大数据”技术的核心理念是非常清晰的，基本上可以被三个核心技术理念概括。</p>
+<ul>
+<li>第一个，是能够伸缩到一千台服务器以上的分布式数据处理集群的技术</li>
+<li>第二个，是这个上千个节点的集群，是采用廉价的 PC 架构搭建起来的</li>
+<li>最后一个，则是“把数据中心当作是一台计算机”（Datacenter as a Computer）</li>
+</ul>
+<h2 id="大数据技术的来龙与去脉"><a href="#大数据技术的来龙与去脉" class="headerlink" title="大数据技术的来龙与去脉"></a>大数据技术的来龙与去脉</h2><h3 id="三驾马车和基础设施"><a href="#三驾马车和基础设施" class="headerlink" title="三驾马车和基础设施"></a>三驾马车和基础设施</h3><p>Google 就在 2003、2004 以及 2006 年，分别抛出了三篇重磅论文。也就是我们常说的“大数据”的三驾马车：GFS、MapReduce 和 Bigtable。</p>
+<p><img src="https://static001.geekbang.org/resource/image/e0/32/e069a97c337d583yyddb87fe51992232.jpg?wh=1920x1279"></p>
+<p>到这里，GFS、MapReduce 和 Bigtable 这三驾马车的论文，就完成了“存储”“计算”“实时服务”这三个核心架构的设计。不过你还要知道，这三篇论文其实还依赖了两个基础设施。</p>
+<p>第一个是为了保障数据一致性的分布式锁。对于这个问题，Google 在发表 Bigtable 的同一年，就发表了实现了 Paxos 算法的 Chubby 锁服务的论文（我会在基础知识篇“分布式锁 Chubby”这一讲中为你详细解读这篇论文）。</p>
+<p>第二个是数据怎么序列化以及分布式系统之间怎么通信。Google 在前面的论文里都没有提到这一点，所以在基础知识篇的“通过 Thrift 序列化：我们要预知未来才能向后兼容吗？”我们会一起来看看 Facebook 在 2007 年发表的 Thrift 的相关论文。</p>
+<p><img src="https://static001.geekbang.org/resource/image/da/28/daa602b79dacbd377f7242a3cf345728.jpg?wh=1920x734"></p>
+<h3 id="OLAP-和-OLTP-数据库"><a href="#OLAP-和-OLTP-数据库" class="headerlink" title="OLAP 和 OLTP 数据库"></a>OLAP 和 OLTP 数据库</h3><p>实际上，如果说 MapReduce 对应的迭代进行，是在不断优化 OLAP 类型的数据处理性能，那么 Bigtable 对应的进化，则是在保障伸缩性的前提下，获得了更多的关系型数据库的能力。</p>
+<p><img src="https://static001.geekbang.org/resource/image/cc/d5/ccc40c7c9770f7e82594cb9d5dd399d5.jpg?wh=2000x1780"></p>
+<h3 id="实时数据处理的抽象进化"><a href="#实时数据处理的抽象进化" class="headerlink" title="实时数据处理的抽象进化"></a>实时数据处理的抽象进化</h3><p>在 2015 年，Google 发表的 Dataflow 的模型，可以说是对于流式数据处理模型做出了最好的总结和抽象。一直到现在，Dataflow 就成为了真正的“流批一体”的大数据处理架构。而后来开源的 Flink 和 Apache Beam，则是完全按照 Dataflow 的模型实现的了。</p>
+<p><img src="https://static001.geekbang.org/resource/image/0f/b9/0f55142af70b3f40fa5b9b8a3f24c9b9.jpg?wh=1920x1709"></p>
+<p>这里，我把这些论文的前后之间的脉络联系专门做了一张图，放在了下面。当你对某一篇论文感到困惑的时候，就可以去翻看它前后对应的论文，找到对应问题的来龙去脉。</p>
+<p><img src="https://static001.geekbang.org/resource/image/36/c8/36f0ccc02181328843a1d795a61d8ec8.jpg?wh=2000x1780"></p>
+<h3 id="将所有服务器放在一起的资源调度"><a href="#将所有服务器放在一起的资源调度" class="headerlink" title="将所有服务器放在一起的资源调度"></a>将所有服务器放在一起的资源调度</h3><p>那么，为了解决一致性问题，我们就有了基于 Paxos 协议的分布式锁。但是 Paxos 协议的性能很差，于是有了进一步的 Multi-Paxos 协议。</p>
+<p>而接下来的问题就是，Paxos 协议并不容易理解，于是就有了 Raft 这个更容易理解的算法的出现。Kubernetes 依赖的 etcd 就是用 Raft 协议实现的，我们在后面的资源调度篇里，会一起来看一下 Raft 协议到底是怎么实现的，以及现代分布式系统依赖的基础设施是什么样子的。</p>
+<h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><p><img src="https://static001.geekbang.org/resource/image/fd/e0/fdc694d707095e8d73dc18521676c0e0.jpg?wh=2000x1725"></p>
+<h2 id="学习方法：建立你的大数据知识网络"><a href="#学习方法：建立你的大数据知识网络" class="headerlink" title="学习方法：建立你的大数据知识网络"></a>学习方法：建立你的大数据知识网络</h2><h3 id="大数据领域的知识地图"><a href="#大数据领域的知识地图" class="headerlink" title="大数据领域的知识地图"></a>大数据领域的知识地图</h3><p><img src="https://static001.geekbang.org/resource/image/92/2d/928e1c25e9b4332d9d897b40de8a972d.jpg?wh=1920x1213"></p>
 
       
 	  
@@ -330,7 +358,7 @@
                 </span>
                 <span class="tooltip-content">
                     <div class="toc-article">
-                    目录，不存在的…
+                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%A7%E6%95%B0%E6%8D%AE%E6%8A%80%E6%9C%AF%E7%9A%84%E6%A0%B8%E5%BF%83%E7%90%86%E5%BF%B5"><span class="toc-number">1.</span> <span class="toc-text">大数据技术的核心理念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%A7%E6%95%B0%E6%8D%AE%E6%8A%80%E6%9C%AF%E7%9A%84%E6%9D%A5%E9%BE%99%E4%B8%8E%E5%8E%BB%E8%84%89"><span class="toc-number">2.</span> <span class="toc-text">大数据技术的来龙与去脉</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E9%A9%BE%E9%A9%AC%E8%BD%A6%E5%92%8C%E5%9F%BA%E7%A1%80%E8%AE%BE%E6%96%BD"><span class="toc-number">2.1.</span> <span class="toc-text">三驾马车和基础设施</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#OLAP-%E5%92%8C-OLTP-%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="toc-number">2.2.</span> <span class="toc-text">OLAP 和 OLTP 数据库</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E6%97%B6%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86%E7%9A%84%E6%8A%BD%E8%B1%A1%E8%BF%9B%E5%8C%96"><span class="toc-number">2.3.</span> <span class="toc-text">实时数据处理的抽象进化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B0%86%E6%89%80%E6%9C%89%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%94%BE%E5%9C%A8%E4%B8%80%E8%B5%B7%E7%9A%84%E8%B5%84%E6%BA%90%E8%B0%83%E5%BA%A6"><span class="toc-number">2.4.</span> <span class="toc-text">将所有服务器放在一起的资源调度</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-number">2.5.</span> <span class="toc-text">小结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%EF%BC%9A%E5%BB%BA%E7%AB%8B%E4%BD%A0%E7%9A%84%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%9F%A5%E8%AF%86%E7%BD%91%E7%BB%9C"><span class="toc-number">3.</span> <span class="toc-text">学习方法：建立你的大数据知识网络</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%A7%E6%95%B0%E6%8D%AE%E9%A2%86%E5%9F%9F%E7%9A%84%E7%9F%A5%E8%AF%86%E5%9C%B0%E5%9B%BE"><span class="toc-number">3.1.</span> <span class="toc-text">大数据领域的知识地图</span></a></li></ol></li></ol>
                     </div>
                 </span>
             </div>
@@ -479,11 +507,11 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">元数据管理</a>
+                <a href="javascript:void(0)" class="js-tag color1">Flink</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">Flink</a>
+                <a href="javascript:void(0)" class="js-tag color1">元数据管理</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -495,11 +523,11 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">PWN</a>
+                <a href="javascript:void(0)" class="js-tag color4">Pwn</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">Pwn</a>
+                <a href="javascript:void(0)" class="js-tag color4">PWN</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -531,11 +559,11 @@ MathJax.Hub.Queue(function() {
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">ctf</a>
+                <a href="javascript:void(0)" class="js-tag color1">hgame</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">hgame</a>
+                <a href="javascript:void(0)" class="js-tag color4">ctf</a>
               </li>
              
               <li class="article-tag-list-item">
