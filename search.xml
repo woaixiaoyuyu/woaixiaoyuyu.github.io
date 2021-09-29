@@ -3492,7 +3492,7 @@
   </entry>
   <entry>
     <title>大数据经典论文解读</title>
-    <url>/2021/09/27/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/</url>
+    <url>/2021/09/29/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/</url>
     <content><![CDATA[<p>切勿浮沙筑高台</p>
 <p><a href="https://time.geekbang.org/column/article/418468?cid=100091101">参考链接1</a></p>
 <p><a href="http://duanple.com/?p=170">参考链接2</a></p>
@@ -3578,6 +3578,34 @@
 </ul>
 <h4 id="独特的-Snapshot-操作"><a href="#独特的-Snapshot-操作" class="headerlink" title="独特的 Snapshot 操作"></a>独特的 Snapshot 操作</h4><p>复制文件，相信这个是你用自己的电脑的时候，会常常做的事儿。在 GFS 上，如果我们用笨一点的办法，自然是通过客户端把文件从 chunkserver 读回来，再通过客户端把数据写回去。这样的话，读数据也经过一次网络传输，写回三个副本服务器，即使是流水线式的传输，也要三次传输，一共需要把数据在网络上搬运四次。</p>
 <p>GFS 就专门为文件复制设计了一个 Snapshot 指令，当客户端通过这个指令进行文件复制的时候，这个指令会通过控制流，下达到主副本服务器，主副本服务器再把这个指令下达到次副本服务器。不过接下来，客户端并不需要去读取或者写入数据，而是各个 chunkserver 会直接在本地把对应的 chunk 复制一份。</p>
+<h2 id="The-Google-File-System-（三）：-多写几次也没关系"><a href="#The-Google-File-System-（三）：-多写几次也没关系" class="headerlink" title="The Google File System （三）： 多写几次也没关系"></a>The Google File System （三）： 多写几次也没关系</h2><p>GFS 的最后一个设计特点，是“放宽数据一致性的要求”。</p>
+<p>GFS 希望在机械硬盘上尽量有比较高的写入性能，所以它只对顺序写入考虑了一致性，这就自然带来了宽松的一致性。</p>
+<p>我们先来看看，一致性到底指的是什么东西。在 GFS 里面，主要定义了对一致性的两个层级的概念：</p>
+<ul>
+<li>第一个，就叫做“一致的（Consistent）”。这个就是指，多个客户端无论是从主副本读取数据，还是从次副本读取数据，读到的数据都是一样的。</li>
+<li>第二个，叫做“确定的（Defined）”。这个要求会高一些，指的是对于客户端写入到 GFS 的数据，能够完整地被读到。可能看到这个定义，你还是不清楚，没关系，我下面会给你详细讲解“确定的”到底是个什么问题。</li>
+</ul>
+<p><img src="https://static001.geekbang.org/resource/image/f0/76/f08de0776c1338980a22f5e57014b976.jpg?wh=1920x589"></p>
+<h3 id="追加写入的“至少一次”的保障"><a href="#追加写入的“至少一次”的保障" class="headerlink" title="追加写入的“至少一次”的保障"></a>追加写入的“至少一次”的保障</h3><p>实际上，这是因为随机写入并不是 GFS 设计的主要的数据写入模式，GFS 设计了一个专门的操作，叫做记录追加（Record Appends）。这是 GFS 希望我们主要使用的数据写入的方式，而且它是原子性（Atomic）的，能够做到在并发写入时候是基本确定的。</p>
+<p>GFS 的记录追加的写入过程，和上一讲的数据写入几乎一样。它们之间的差别主要在于，GFS 并不会指定在 chunk 的哪个位置上写入数据，而是告诉最后一个 chunk 所在的主副本服务器，“我”要进行记录追加。</p>
+<p>这个时候，主副本所在的 chunkserver 会做这样几件事情：</p>
+<ul>
+<li>检查当前的 chunk 是不是可以写得下现在要追加的记录。如果写得下，那么就把当前的追加记录写进去，同时，这个数据写入也会发送给其他次副本，在次副本上也写一遍。</li>
+<li>如果当前 chunk 已经放不下了，那么它先会把当前 chunk 填满空数据，并且让次副本也一样填满空数据。然后，主副本会告诉客户端，让它在下一个 chunk 上重新试验。这时候，客户端就会去一个新的 chunk 所在的 chunkserver 进行记录追加。</li>
+<li>因为主副本所在的 chunkserver 控制了数据写入的操作顺序，并且数据只会往后追加，所以即使在有并发写入的情况下，请求也都会到主副本所在的同一个 chunkserver 上排队，也就不会有数据写入到同一块区域，覆盖掉已经被追加写入的数据的情况了。</li>
+<li>而为了保障 chunk 里能存的下需要追加的数据，GFS 限制了一次记录追加的数据量是 16MB，而 chunkserver 里的一个 chunk 的大小是 64MB。所以，在记录追加需要在 chunk 里填空数据的时候，最多也就是填入 16MB，也就是 chunkserver 的存储空间最多会浪费 1/4。</li>
+</ul>
+<p><img src="https://static001.geekbang.org/resource/image/44/0c/44440eb6b88c073763efdcb58e6f410c.jpg?wh=1920x1444"></p>
+<p>我们可以一起来看这样一个例子：有三个客户端 X、Y、Z 并发向同一个文件进行记录追加，写入数据 A、B、C，对应的三个副本的 chunkserver 分别是 Q、P、R。</p>
+<p>主副本先收到数据 A 的记录追加，在主副本和次副本上进行数据写入。在 A 写入的同时，B，C 的记录追加请求也来了，这个时候写入会并行进行，追加在 A 的后面。</p>
+<p>这个时候，A 的写入在某个次副本 R 上失败了，于是主副本告诉客户端去重试；同时，客户端再次发起记录追加的重试，这次的数据写入，不在 A 原来的位置，而会是在 C 后面。</p>
+<p>如此一来，在 B 和 C 的写入，以及 A 的重试完成之后，我们可以看到：</p>
+<ul>
+<li>在 Q 和 P 上，chunkserver 里面的数据顺序是 A-B-C-A；</li>
+<li>但是在 R 上，chunkserver 里面的数据顺序是 N/A-B-C-A；</li>
+<li>也就是 Q 和 P 上，A 的数据被写入了两次，而在 R 上，数据里面有一段是有不可用的脏数据。</li>
+</ul>
+<p><img src="https://static001.geekbang.org/resource/image/d3/d9/d36e354c23d0312df6e06eb31d8de0d9.jpg?wh=1920x1444"></p>
 ]]></content>
       <tags>
         <tag>Big Data</tag>
