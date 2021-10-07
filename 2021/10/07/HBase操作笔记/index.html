@@ -6,21 +6,26 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://woaixiaoyuyu.github.io">
-  <title>leetcode_爬楼梯 | xiaoyuyulala</title>
+  <title>HBase操作笔记 | xiaoyuyulala</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="爬呀爬~">
+  <meta name="description" content="HBase基本操作整理 参考链接1">
 <meta property="og:type" content="article">
-<meta property="og:title" content="leetcode_爬楼梯">
-<meta property="og:url" content="http://woaixiaoyuyu.github.io/2019/02/10/leetcode-%E7%88%AC%E6%A5%BC%E6%A2%AF/index.html">
+<meta property="og:title" content="HBase操作笔记">
+<meta property="og:url" content="http://woaixiaoyuyu.github.io/2021/10/07/HBase%E6%93%8D%E4%BD%9C%E7%AC%94%E8%AE%B0/index.html">
 <meta property="og:site_name" content="xiaoyuyulala">
-<meta property="og:description" content="爬呀爬~">
+<meta property="og:description" content="HBase基本操作整理 参考链接1">
 <meta property="og:locale">
-<meta property="article:published_time" content="2019-02-10T12:47:09.000Z">
-<meta property="article:modified_time" content="2019-02-10T13:31:56.000Z">
+<meta property="og:image" content="https://z3.ax1x.com/2021/10/07/5pVaex.png">
+<meta property="og:image" content="https://z3.ax1x.com/2021/10/07/5pVNO1.png">
+<meta property="og:image" content="https://z3.ax1x.com/2021/10/07/5pVdw6.png">
+<meta property="og:image" content="https://z3.ax1x.com/2021/10/07/5pVwTK.png">
+<meta property="article:published_time" content="2021-10-07T07:45:21.000Z">
+<meta property="article:modified_time" content="2021-10-07T07:45:20.359Z">
 <meta property="article:author" content="xiaoyuyu">
-<meta property="article:tag" content="python">
-<meta property="article:tag" content="leetcode">
+<meta property="article:tag" content="Big Data">
+<meta property="article:tag" content="HBase">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://z3.ax1x.com/2021/10/07/5pVaex.png">
   
     <link rel="alternative" href="/atom.xml" title="xiaoyuyulala" type="application/atom+xml">
   
@@ -152,45 +157,59 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            <article id="post-leetcode-爬楼梯" class="article article-type-post " itemscope itemprop="blogPost">
+            <article id="post-HBase操作笔记" class="article article-type-post " itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
         
   
     <h1 class="article-title" itemprop="name">
-      leetcode_爬楼梯
+      HBase操作笔记
     </h1>
   
 
         
-        <a href="/2019/02/10/leetcode-%E7%88%AC%E6%A5%BC%E6%A2%AF/" class="archive-article-date">
-  	<time datetime="2019-02-10T12:47:09.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-02-10</time>
+        <a href="/2021/10/07/HBase%E6%93%8D%E4%BD%9C%E7%AC%94%E8%AE%B0/" class="archive-article-date">
+  	<time datetime="2021-10-07T07:45:21.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-10-07</time>
 </a>
         
       </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>爬呀爬~</p>
+        <p>HBase基本操作整理</p>
+<p><a target="_blank" rel="noopener" href="http://abloz.com/hbase/book.html">参考链接1</a></p>
 <span id="more"></span>
 
-<h2 id="题目"><a href="#题目" class="headerlink" title="题目"></a>题目</h2><p>假设你正在爬楼梯。需要 <em>n</em> 阶你才能到达楼顶。</p>
-<p>每次你可以爬 1 或 2 个台阶。你有多少种不同的方法可以爬到楼顶呢？</p>
-<p><strong>注意：</strong>给定 <em>n</em> 是一个正整数。</p>
-<p><strong>示例 1：</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">输入： 2</span><br><span class="line">输出： 2</span><br><span class="line">解释： 有两种方法可以爬到楼顶。</span><br><span class="line">1.  1 阶 + 1 阶</span><br><span class="line">2.  2 阶</span><br></pre></td></tr></table></figure>
-
-<p><strong>示例 2：</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">输入： 3</span><br><span class="line">输出： 3</span><br><span class="line">解释： 有三种方法可以爬到楼顶。</span><br><span class="line">1.  1 阶 + 1 阶 + 1 阶</span><br><span class="line">2.  1 阶 + 2 阶</span><br><span class="line">3.  2 阶 + 1 阶</span><br></pre></td></tr></table></figure>
-
-<h2 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h2><p>有点像排列组合的题目，但还真不知道python怎么写，感觉把P和C的具体公式写出来就好，一些大神直接联想到了斐波那契数列，佩服佩服，不过想从实际问题的角度去考虑一下，我们从动态规划的角度考虑（几天前刚了解233……），第 i 个楼梯可以从第 i-1 和 i-2 个楼梯再走一步到达，走到第 i 个楼梯的方法数为走到第 i-1 和第 i-2 个楼梯的方法数之和，这么一想，欸，的确是斐波那契数列，明了多了</p>
-<h2 id="解法1—斐波那契"><a href="#解法1—斐波那契" class="headerlink" title="解法1—斐波那契"></a>解法1—斐波那契</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">climbStairs</span>(<span class="params">self, n</span>):</span></span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        :type n: int</span></span><br><span class="line"><span class="string">        :rtype: int</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        a = <span class="number">0</span></span><br><span class="line">        b = <span class="number">1</span></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(n):</span><br><span class="line">            <span class="built_in">print</span>(b)</span><br><span class="line">            a,b = b,a+b</span><br><span class="line">        <span class="keyword">return</span> b</span><br></pre></td></tr></table></figure>
-
-<h2 id="解法2"><a href="#解法2" class="headerlink" title="解法2"></a>解法2</h2><p>执行用时: 52 ms, 在Climbing Stairs的Python3提交中击败了15.27% 的用户，神仙也太多了吧，想个好点的，怎么也要超过30%，哭了</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">climbStairs</span>(<span class="params">self, n</span>):</span></span><br><span class="line">        <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        :type n: int</span></span><br><span class="line"><span class="string">        :rtype: int</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        <span class="keyword">if</span> n == <span class="number">1</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span></span><br><span class="line">        <span class="keyword">if</span> n == <span class="number">2</span>:</span><br><span class="line">            <span class="keyword">return</span> <span class="number">2</span></span><br><span class="line">        res = [<span class="number">1</span>, <span class="number">2</span>]</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">2</span>, n):</span><br><span class="line">            res.append(res[i - <span class="number">1</span>] + res[i - <span class="number">2</span>])</span><br><span class="line">        <span class="keyword">return</span> res[-<span class="number">1</span>]</span><br></pre></td></tr></table></figure>
-
-<p>其实思想是一样的，只不过少了很多次的解包操作，可以快很多，但我自己看上一种办法更爽</p>
+<h2 id="HBase数据模型"><a href="#HBase数据模型" class="headerlink" title="HBase数据模型"></a>HBase数据模型</h2><h3 id="HBase逻辑架构"><a href="#HBase逻辑架构" class="headerlink" title="HBase逻辑架构"></a>HBase逻辑架构</h3><p><img src="https://z3.ax1x.com/2021/10/07/5pVaex.png" alt="5pVaex.png"></p>
+<h3 id="HBase物理存储"><a href="#HBase物理存储" class="headerlink" title="HBase物理存储"></a>HBase物理存储</h3><p><img src="https://z3.ax1x.com/2021/10/07/5pVNO1.png" alt="5pVNO1.png"></p>
+<h3 id="概念描述"><a href="#概念描述" class="headerlink" title="概念描述"></a>概念描述</h3><p><img src="https://z3.ax1x.com/2021/10/07/5pVdw6.png" alt="5pVdw6.png"></p>
+<h2 id="HBase整体架构"><a href="#HBase整体架构" class="headerlink" title="HBase整体架构"></a>HBase整体架构</h2><p><img src="https://z3.ax1x.com/2021/10/07/5pVwTK.png" alt="5pVwTK.png"></p>
+<p><strong>Zookeeper</strong></p>
+<ul>
+<li>实现了HMaster的⾼可⽤</li>
+<li>保存了HBase的元数据信息，是所有HBase表的寻址⼊⼝</li>
+<li>对HMaster和HRegionServer实现了监控</li>
+</ul>
+<p><strong>HMaster</strong>（<strong>Master</strong>） </p>
+<ul>
+<li>为HRegionServer分配Region</li>
+<li>维护整个集群的负载均衡</li>
+<li>维护集群的元数据信息</li>
+<li>发现失效的Region，并将失效的Region分配到正常的HRegionServer上</li>
+</ul>
+<p><strong>HRegionServer</strong>（<strong>RegionServer</strong>）</p>
+<ul>
+<li>负责管理Region</li>
+<li>接受客户端的读写数据请求</li>
+<li>切分在运⾏过程中变⼤的Region</li>
+</ul>
+<p><strong>Region</strong></p>
+<ul>
+<li>每个HRegion由多个Store构成，</li>
+<li>每个Store保存⼀个列族（Columns Family），表有⼏个列族，则有⼏个Store，</li>
+<li>每个Store由⼀个MemStore和多个StoreFile组成，MemStore是Store在内存中的内容，写到⽂件后就是StoreFile。StoreFile底层是以HFile的格式保存。</li>
+</ul>
 
       
 	  
@@ -203,7 +222,7 @@
     
     <br>
     <strong>本文链接：</strong>
-    http://woaixiaoyuyu.github.io/2019/02/10/leetcode-%E7%88%AC%E6%A5%BC%E6%A2%AF/
+    http://woaixiaoyuyu.github.io/2021/10/07/HBase%E6%93%8D%E4%BD%9C%E7%AC%94%E8%AE%B0/
     <br>
     <strong>版权声明：</strong>
     本作品采用
@@ -244,11 +263,11 @@
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">python</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">Big Data</a>
         		</li>
       		 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">leetcode</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">HBase</a>
         		</li>
       		
 		</ul>
@@ -304,7 +323,7 @@
     <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
     <p>扫一扫，分享到微信</p>
     <div class="wx-qrcode">
-      <img src="//pan.baidu.com/share/qrcode?url=http://woaixiaoyuyu.github.io/2019/02/10/leetcode-%E7%88%AC%E6%A5%BC%E6%A2%AF/" alt="微信分享二维码">
+      <img src="//pan.baidu.com/share/qrcode?url=http://woaixiaoyuyu.github.io/2021/10/07/HBase%E6%93%8D%E4%BD%9C%E7%AC%94%E8%AE%B0/" alt="微信分享二维码">
     </div>
 </div>
 
@@ -318,18 +337,9 @@
   
 <nav id="article-nav">
   
-    <a href="/2019/02/14/CSS3%E5%BC%80%E5%9D%91-%E4%B8%8D%E5%AE%9A%E6%9C%9F%E6%9B%B4%E6%96%B0/" id="article-nav-newer" class="article-nav-link-wrap">
-      <i class="icon-circle-left"></i>
-      <div class="article-nav-title">
-        
-          CSS3开坑_不定期更新
-        
-      </div>
-    </a>
   
-  
-    <a href="/2019/02/09/Jarvis%20OJ---Guestbook2%20WP/" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title">Jarvis OJ---Guestbook2 WP</div>
+    <a href="/2021/10/07/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">大数据经典论文解读</div>
       <i class="icon-circle-right"></i>
     </a>
   
@@ -356,7 +366,7 @@
                 </span>
                 <span class="tooltip-content">
                     <div class="toc-article">
-                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A2%98%E7%9B%AE"><span class="toc-number">1.</span> <span class="toc-text">题目</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E6%9E%90"><span class="toc-number">2.</span> <span class="toc-text">分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A7%A3%E6%B3%951%E2%80%94%E6%96%90%E6%B3%A2%E9%82%A3%E5%A5%91"><span class="toc-number">3.</span> <span class="toc-text">解法1—斐波那契</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%A7%A3%E6%B3%952"><span class="toc-number">4.</span> <span class="toc-text">解法2</span></a></li></ol>
+                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#HBase%E6%95%B0%E6%8D%AE%E6%A8%A1%E5%9E%8B"><span class="toc-number">1.</span> <span class="toc-text">HBase数据模型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#HBase%E9%80%BB%E8%BE%91%E6%9E%B6%E6%9E%84"><span class="toc-number">1.1.</span> <span class="toc-text">HBase逻辑架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HBase%E7%89%A9%E7%90%86%E5%AD%98%E5%82%A8"><span class="toc-number">1.2.</span> <span class="toc-text">HBase物理存储</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A6%82%E5%BF%B5%E6%8F%8F%E8%BF%B0"><span class="toc-number">1.3.</span> <span class="toc-text">概念描述</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#HBase%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84"><span class="toc-number">2.</span> <span class="toc-text">HBase整体架构</span></a></li></ol>
                     </div>
                 </span>
             </div>

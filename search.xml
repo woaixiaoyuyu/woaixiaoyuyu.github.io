@@ -4,6 +4,27 @@
   
     
     <entry>
+      <title>HBase操作笔记</title>
+      <link href="/2021/10/07/HBase%E6%93%8D%E4%BD%9C%E7%AC%94%E8%AE%B0/"/>
+      <url>/2021/10/07/HBase%E6%93%8D%E4%BD%9C%E7%AC%94%E8%AE%B0/</url>
+      
+        <content type="html"><![CDATA[<p>HBase基本操作整理</p><p><a href="http://abloz.com/hbase/book.html">参考链接1</a></p><span id="more"></span><h2 id="HBase数据模型"><a href="#HBase数据模型" class="headerlink" title="HBase数据模型"></a>HBase数据模型</h2><h3 id="HBase逻辑架构"><a href="#HBase逻辑架构" class="headerlink" title="HBase逻辑架构"></a>HBase逻辑架构</h3><p><img src="https://z3.ax1x.com/2021/10/07/5pVaex.png" alt="5pVaex.png"></p><h3 id="HBase物理存储"><a href="#HBase物理存储" class="headerlink" title="HBase物理存储"></a>HBase物理存储</h3><p><img src="https://z3.ax1x.com/2021/10/07/5pVNO1.png" alt="5pVNO1.png"></p><h3 id="概念描述"><a href="#概念描述" class="headerlink" title="概念描述"></a>概念描述</h3><p><img src="https://z3.ax1x.com/2021/10/07/5pVdw6.png" alt="5pVdw6.png"></p><h2 id="HBase整体架构"><a href="#HBase整体架构" class="headerlink" title="HBase整体架构"></a>HBase整体架构</h2><p><img src="https://z3.ax1x.com/2021/10/07/5pVwTK.png" alt="5pVwTK.png"></p><p><strong>Zookeeper</strong></p><ul><li>实现了HMaster的⾼可⽤</li><li>保存了HBase的元数据信息，是所有HBase表的寻址⼊⼝</li><li>对HMaster和HRegionServer实现了监控</li></ul><p><strong>HMaster</strong>（<strong>Master</strong>） </p><ul><li>为HRegionServer分配Region</li><li>维护整个集群的负载均衡</li><li>维护集群的元数据信息</li><li>发现失效的Region，并将失效的Region分配到正常的HRegionServer上</li></ul><p><strong>HRegionServer</strong>（<strong>RegionServer</strong>）</p><ul><li>负责管理Region</li><li>接受客户端的读写数据请求</li><li>切分在运⾏过程中变⼤的Region</li></ul><p><strong>Region</strong></p><ul><li>每个HRegion由多个Store构成，</li><li>每个Store保存⼀个列族（Columns Family），表有⼏个列族，则有⼏个Store，</li><li>每个Store由⼀个MemStore和多个StoreFile组成，MemStore是Store在内存中的内容，写到⽂件后就是StoreFile。StoreFile底层是以HFile的格式保存。</li></ul>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> Big Data </tag>
+            
+            <tag> HBase </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>大数据经典论文解读</title>
       <link href="/2021/10/07/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/"/>
       <url>/2021/10/07/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/</url>
