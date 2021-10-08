@@ -11,7 +11,7 @@
   <meta name="description" content="HBase基本操作整理 参考链接1">
 <meta property="og:type" content="article">
 <meta property="og:title" content="HBase操作笔记">
-<meta property="og:url" content="http://woaixiaoyuyu.github.io/2021/10/07/HBase%E6%93%8D%E4%BD%9C%E7%AC%94%E8%AE%B0/index.html">
+<meta property="og:url" content="http://woaixiaoyuyu.github.io/2021/10/08/HBase%E6%93%8D%E4%BD%9C%E7%AC%94%E8%AE%B0/index.html">
 <meta property="og:site_name" content="xiaoyuyulala">
 <meta property="og:description" content="HBase基本操作整理 参考链接1">
 <meta property="og:locale">
@@ -19,8 +19,8 @@
 <meta property="og:image" content="https://z3.ax1x.com/2021/10/07/5pVNO1.png">
 <meta property="og:image" content="https://z3.ax1x.com/2021/10/07/5pVdw6.png">
 <meta property="og:image" content="https://z3.ax1x.com/2021/10/07/5pVwTK.png">
-<meta property="article:published_time" content="2021-10-07T09:17:21.000Z">
-<meta property="article:modified_time" content="2021-10-07T09:20:01.787Z">
+<meta property="article:published_time" content="2021-10-08T14:00:21.000Z">
+<meta property="article:modified_time" content="2021-10-08T13:59:14.521Z">
 <meta property="article:author" content="xiaoyuyu">
 <meta property="article:tag" content="Big Data">
 <meta property="article:tag" content="HBase">
@@ -169,8 +169,8 @@
   
 
         
-        <a href="/2021/10/07/HBase%E6%93%8D%E4%BD%9C%E7%AC%94%E8%AE%B0/" class="archive-article-date">
-  	<time datetime="2021-10-07T09:17:21.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-10-07</time>
+        <a href="/2021/10/08/HBase%E6%93%8D%E4%BD%9C%E7%AC%94%E8%AE%B0/" class="archive-article-date">
+  	<time datetime="2021-10-08T14:00:21.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-10-08</time>
 </a>
         
       </header>
@@ -265,7 +265,95 @@
 <p>删除表</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">先<span class="built_in">disable</span> 再drop</span></span><br><span class="line"><span class="meta">#</span><span class="bash">如果不进⾏<span class="built_in">disable</span>，直接drop会报错</span></span><br><span class="line">ERROR: Table user is enabled. Disable it first.</span><br><span class="line"></span><br><span class="line">hbase(main):046:0&gt; disable &#x27;student&#x27;</span><br><span class="line">0 row(s) in 2.2480 seconds</span><br><span class="line"></span><br><span class="line">hbase(main):047:0&gt; drop &#x27;student&#x27;</span><br><span class="line">0 row(s) in 1.2490 seconds</span><br></pre></td></tr></table></figure>
 
-<h2 id="HBase原理深⼊"><a href="#HBase原理深⼊" class="headerlink" title="HBase原理深⼊"></a>HBase原理深⼊</h2><p>……</p>
+<h2 id="HBase原理深⼊"><a href="#HBase原理深⼊" class="headerlink" title="HBase原理深⼊"></a>HBase原理深⼊</h2><h3 id="HBase读数据流程"><a href="#HBase读数据流程" class="headerlink" title="HBase读数据流程"></a>HBase读数据流程</h3><p>总体和bigtable论文中的三层逻辑比较相似，读论文还是有好处的，这里的zookeeper就实现了Chubby的功能。可以看到读写数据和master没有产生交互。</p>
+<p>1）⾸先从zk找到meta表的region位置，然后读取meta表中的数据，meta表中存储了⽤户表的region信息</p>
+<p>2）根据要查询的namespace、表名和rowkey信息。找到写⼊数据对应的region信息</p>
+<p>3）找到这个region对应的regionServer，然后发送请求</p>
+<p>4）查找对应的region</p>
+<p>5）先从memstore查找数据，如果没有，再从BlockCache上读取</p>
+<p>HBase上Regionserver的内存分为两个部分</p>
+<p>⼀部分作为Memstore，主要⽤来写；</p>
+<p>另外⼀部分作为BlockCache，主要⽤于读数据；</p>
+<p>6）如果BlockCache中也没有找到，再到StoreFile上进⾏读取</p>
+<p>从storeFile中读取到数据之后，不是直接把结果数据返回给客户端， ⽽是把数据先写⼊到BlockCache中，⽬的是为了加快后续的查询；然后在返回结果给客户</p>
+<p>端。</p>
+<p>![image-20211008203822121](/Users/louwen/Library/Application Support/typora-user-images/image-20211008203822121.png)</p>
+<h3 id="HBase写数据流程"><a href="#HBase写数据流程" class="headerlink" title="HBase写数据流程"></a>HBase写数据流程</h3><p>1）⾸先从zk找到meta表的region位置，然后读取meta表中的数据，meta表中存储了⽤户表的region信息</p>
+<p>2）根据namespace、表名和rowkey信息。找到写⼊数据对应的region信息</p>
+<p>3）找到这个region对应的regionServer，然后发送请求</p>
+<p>4）把数据分别写到HLog（write ahead log）和memstore各⼀份</p>
+<p>5）memstore达到阈值后把数据刷到磁盘，⽣成storeFile⽂件</p>
+<p>6）删除HLog中的历史数据</p>
+<p>![image-20211008204312496](/Users/louwen/Library/Application Support/typora-user-images/image-20211008204312496.png)</p>
+<p>总体还是比较清晰的，同样不需要master的干预。</p>
+<h3 id="HBase的flush-刷写-及compact-合并-机制"><a href="#HBase的flush-刷写-及compact-合并-机制" class="headerlink" title="HBase的flush(刷写)及compact(合并)机制"></a>HBase的flush(刷写)及compact(合并)机制</h3><p>我们之前可以看到memstore有一个flush的操作，同时storefile还会有合并的动作，这里主要关心一下如何配置</p>
+<h4 id="Flush机制"><a href="#Flush机制" class="headerlink" title="Flush机制"></a>Flush机制</h4><p>（1）当memstore的⼤⼩超过这个值的时候，会flflush到磁盘,默认为128M</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span> </span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">name</span>&gt;</span>hbase.hregion.memstore.flush.size<span class="tag">&lt;/<span class="name">name</span>&gt;</span> </span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">value</span>&gt;</span>134217728<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span> </span><br></pre></td></tr></table></figure>
+
+<p>（2）当memstore中的数据时间超过1⼩时，会flflush到磁盘</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span> </span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">name</span>&gt;</span>hbase.regionserver.optionalcacheflushinterval<span class="tag">&lt;/<span class="name">name</span>&gt;</span> </span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">value</span>&gt;</span>3600000<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>（3）HregionServer的全局memstore的⼤⼩，超过该⼤⼩会触发flflush到磁盘的操作,默认是堆⼤⼩的40%</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span> </span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">name</span>&gt;</span>hbase.regionserver.global.memstore.size<span class="tag">&lt;/<span class="name">name</span>&gt;</span> </span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">value</span>&gt;</span>0.4<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span> </span><br></pre></td></tr></table></figure>
+
+<p>（4）⼿动flflush</p>
+<p>flush tableName</p>
+<h4 id="阻塞机制"><a href="#阻塞机制" class="headerlink" title="阻塞机制"></a>阻塞机制</h4><p>如果一直往memstore写入显然是不合理的，源源不断的数据写入，早晚会爆掉，Hbase中是周期性的检查是否满⾜以上标准满⾜则进⾏刷写，但是如果在下次检查到来之前，数据疯狂写⼊Memstore中需要一定的控制，阻塞机制就针对这点进行处理。</p>
+<ul>
+<li><p>memstore中数据达到512MB</p>
+<p>计算公式：hbase.hregion.memstore.flflush.size*hbase.hregion.memstore..block.multiplier</p>
+<p>hbase.hregion.memstore.flflush.size刷写的阀值，默认是 134217728，即128MB。</p>
+<p>hbase.hregion.memstore.block.multiplier是⼀个倍数，默认 是4。</p>
+</li>
+<li><p>RegionServer全部memstore达到规定值</p>
+<p>hbase.regionserver.global.memstore.size.lower.limit是0.95，</p>
+<p>hbase.regionserver.global.memstore.size是0.4，</p>
+<p>堆内存总共是 16G，</p>
+<p>触发刷写的阈值是：6.08GB 触发阻塞的阈值是：6.4GB</p>
+</li>
+</ul>
+<h4 id="Compact合并机制"><a href="#Compact合并机制" class="headerlink" title="Compact合并机制"></a>Compact合并机制</h4><p>合并文件这里主要考虑storefile的合并，主要分为两种，小文件合并和大文件合并</p>
+<p><strong>minor compact</strong> ⼩合并</p>
+<ul>
+<li><p>在将Store中多个HFile(StoreFile)合并为⼀个HFile</p>
+<p>这个过程中，删除和更新的数据仅仅只是做了标记，并没有物理移除，这种合并的触发频率很⾼。</p>
+<p>minor compact⽂件选择标准由以下⼏个参数共同决定：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--待合并⽂件数据必须⼤于等于下⾯这个值--&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span> </span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">name</span>&gt;</span>hbase.hstore.compaction.min<span class="tag">&lt;/<span class="name">name</span>&gt;</span> </span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">value</span>&gt;</span>3<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">&lt;!--待合并⽂件数据必须⼩于等于下⾯这个值--&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span> </span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">name</span>&gt;</span>hbase.hstore.compaction.max<span class="tag">&lt;/<span class="name">name</span>&gt;</span> </span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">value</span>&gt;</span>10<span class="tag">&lt;/<span class="name">value</span>&gt;</span><span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">&lt;!--默认值为128m,</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">表示⽂件⼤⼩⼩于该值的store file ⼀定会加⼊到minor compaction的store file中</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">--&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span> </span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">name</span>&gt;</span>hbase.hstore.compaction.min.size<span class="tag">&lt;/<span class="name">name</span>&gt;</span> </span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">value</span>&gt;</span>134217728<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">&lt;!--默认值为LONG.MAX_VALUE，</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">表示⽂件⼤⼩⼤于该值的store file ⼀定会被minor compaction排除--&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span> </span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">name</span>&gt;</span>hbase.hstore.compaction.max.size<span class="tag">&lt;/<span class="name">name</span>&gt;</span> </span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">value</span>&gt;</span>9223372036854775807<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<p><strong>major compact</strong> ⼤合并</p>
+<ul>
+<li><p>合并Store中所有的HFile为⼀个HFile</p>
+<p>这个过程有删除标记的数据会被真正移除，同时超过单元格maxVersion的版本记录也会被删除。合并频率⽐较低，默认7天执⾏⼀次，并且性能消耗⾮常⼤，建议⽣产关闭(设置为0)，在应⽤空闲时间⼿动触发。⼀般可以是⼿动控制进⾏合并，防⽌出现在业务⾼峰期。</p>
+<p>major compaction触发时间条件</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!--默认值为7天进⾏⼀次⼤合并，--&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span> </span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">name</span>&gt;</span>hbase.hregion.majorcompaction<span class="tag">&lt;/<span class="name">name</span>&gt;</span> </span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">value</span>&gt;</span>604800000<span class="tag">&lt;/<span class="name">value</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>⼿动触发</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"><span class="comment">#使⽤major_compact命令</span></span></span><br><span class="line">major_compact tableName</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="Region-拆分机制"><a href="#Region-拆分机制" class="headerlink" title="Region 拆分机制"></a>Region 拆分机制</h3><p>Region中存储的是⼤量的rowkey数据 ,当Region中的数据条数过多的时候,直接影响查询效率.当Region过⼤的时候.HBase会拆分Region , 这也是Hbase的⼀个优点 。</p>
+<p>首先同一个列族才会存放在同一个region，这点需要注意。</p>
+<p>具体分区策略可以在官方文档查看，种类比较多，也可以自定义拆分策略。</p>
+<h3 id="HBase表的预分区-region"><a href="#HBase表的预分区-region" class="headerlink" title="HBase表的预分区(region)"></a>HBase表的预分区(region)</h3><p>当⼀个table刚被创建的时候，Hbase默认的分配⼀个region给table。也就是说这个时候，所有的读写请求都会访问到同⼀个regionServer的同⼀个region中，这个时候就达不到负载均衡的效果了，集群中的其他regionServer就可能会处于⽐较空闲的状态。解决这个问题可以⽤pre-splitting,在创建table的时候就配置好，⽣成多个region。</p>
+<ul>
+<li>增加数据读写效率</li>
+<li>负载均衡，防⽌数据倾斜</li>
+<li>⽅便集群容灾调度region</li>
+</ul>
+<p>每⼀个region维护着startRow与endRowKey，如果加⼊的数据符合某个region维护的rowKey范围，则该数据交给这个region维。</p>
+<p>⼿动指定预分区</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">create</span> <span class="string">&#x27;person&#x27;</span>,<span class="string">&#x27;info1&#x27;</span>,<span class="string">&#x27;info2&#x27;</span>,SPLITS <span class="operator">=</span><span class="operator">&gt;</span> [<span class="string">&#x27;1000&#x27;</span>,<span class="string">&#x27;2000&#x27;</span>,<span class="string">&#x27;3000&#x27;</span>]</span><br></pre></td></tr></table></figure>
+
+<p>也可以把分区规则创建于⽂件中</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim split.txt</span><br></pre></td></tr></table></figure>
+
+<p>⽂件内容</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">aaa</span><br><span class="line"></span><br><span class="line">bbb</span><br><span class="line"></span><br><span class="line">ccc</span><br><span class="line"></span><br><span class="line">ddd</span><br></pre></td></tr></table></figure>
+
+<p>执⾏</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">create</span> <span class="string">&#x27;student&#x27;</span>,<span class="string">&#x27;info&#x27;</span>,SPLITS_FILE <span class="operator">=</span><span class="operator">&gt;</span> <span class="string">&#x27;/root/hbase/split.txt&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="Region-合并"><a href="#Region-合并" class="headerlink" title="Region 合并"></a>Region 合并</h3><p>Region的合并不是为了性能，⽽是出于维护的⽬的。</p>
+<p>有冷合并和热合并两种，冷合并需要关闭hbase集群，热合并直接在hbase shell进行即可。</p>
 
       
 	  
@@ -278,7 +366,7 @@
     
     <br>
     <strong>本文链接：</strong>
-    http://woaixiaoyuyu.github.io/2021/10/07/HBase%E6%93%8D%E4%BD%9C%E7%AC%94%E8%AE%B0/
+    http://woaixiaoyuyu.github.io/2021/10/08/HBase%E6%93%8D%E4%BD%9C%E7%AC%94%E8%AE%B0/
     <br>
     <strong>版权声明：</strong>
     本作品采用
@@ -379,7 +467,7 @@
     <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
     <p>扫一扫，分享到微信</p>
     <div class="wx-qrcode">
-      <img src="//pan.baidu.com/share/qrcode?url=http://woaixiaoyuyu.github.io/2021/10/07/HBase%E6%93%8D%E4%BD%9C%E7%AC%94%E8%AE%B0/" alt="微信分享二维码">
+      <img src="//pan.baidu.com/share/qrcode?url=http://woaixiaoyuyu.github.io/2021/10/08/HBase%E6%93%8D%E4%BD%9C%E7%AC%94%E8%AE%B0/" alt="微信分享二维码">
     </div>
 </div>
 
@@ -393,18 +481,9 @@
   
 <nav id="article-nav">
   
-    <a href="/2021/10/08/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" id="article-nav-newer" class="article-nav-link-wrap">
-      <i class="icon-circle-left"></i>
-      <div class="article-nav-title">
-        
-          大数据经典论文解读(一)
-        
-      </div>
-    </a>
   
-  
-    <a href="/2021/09/05/%E8%B0%83%E4%BC%98/" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title">调优</div>
+    <a href="/2021/10/08/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">大数据经典论文解读(一)</div>
       <i class="icon-circle-right"></i>
     </a>
   
@@ -431,7 +510,7 @@
                 </span>
                 <span class="tooltip-content">
                     <div class="toc-article">
-                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#HBase%E6%95%B0%E6%8D%AE%E6%A8%A1%E5%9E%8B"><span class="toc-number">1.</span> <span class="toc-text">HBase数据模型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#HBase%E9%80%BB%E8%BE%91%E6%9E%B6%E6%9E%84"><span class="toc-number">1.1.</span> <span class="toc-text">HBase逻辑架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HBase%E7%89%A9%E7%90%86%E5%AD%98%E5%82%A8"><span class="toc-number">1.2.</span> <span class="toc-text">HBase物理存储</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A6%82%E5%BF%B5%E6%8F%8F%E8%BF%B0"><span class="toc-number">1.3.</span> <span class="toc-text">概念描述</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#HBase%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84"><span class="toc-number">2.</span> <span class="toc-text">HBase整体架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#HBase%E5%90%AF%E5%8A%A8"><span class="toc-number">3.</span> <span class="toc-text">HBase启动</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#HBase-shell"><span class="toc-number">4.</span> <span class="toc-text">HBase shell</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C"><span class="toc-number">4.1.</span> <span class="toc-text">基本操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9B%E5%BB%BAtable"><span class="toc-number">4.2.</span> <span class="toc-text">创建table</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#put%E6%95%B0%E6%8D%AE"><span class="toc-number">4.3.</span> <span class="toc-text">put数据</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#get%E6%95%B0%E6%8D%AE"><span class="toc-number">4.4.</span> <span class="toc-text">get数据</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#scan%E6%95%B0%E6%8D%AE"><span class="toc-number">4.5.</span> <span class="toc-text">scan数据</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#put%E6%9B%B4%E6%96%B0%E6%95%B0%E6%8D%AE"><span class="toc-number">4.6.</span> <span class="toc-text">put更新数据</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#delete%E5%88%A0%E9%99%A4"><span class="toc-number">4.7.</span> <span class="toc-text">delete删除</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#HBase%E5%8E%9F%E7%90%86%E6%B7%B1%E2%BC%8A"><span class="toc-number">5.</span> <span class="toc-text">HBase原理深⼊</span></a></li></ol>
+                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#HBase%E6%95%B0%E6%8D%AE%E6%A8%A1%E5%9E%8B"><span class="toc-number">1.</span> <span class="toc-text">HBase数据模型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#HBase%E9%80%BB%E8%BE%91%E6%9E%B6%E6%9E%84"><span class="toc-number">1.1.</span> <span class="toc-text">HBase逻辑架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HBase%E7%89%A9%E7%90%86%E5%AD%98%E5%82%A8"><span class="toc-number">1.2.</span> <span class="toc-text">HBase物理存储</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A6%82%E5%BF%B5%E6%8F%8F%E8%BF%B0"><span class="toc-number">1.3.</span> <span class="toc-text">概念描述</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#HBase%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84"><span class="toc-number">2.</span> <span class="toc-text">HBase整体架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#HBase%E5%90%AF%E5%8A%A8"><span class="toc-number">3.</span> <span class="toc-text">HBase启动</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#HBase-shell"><span class="toc-number">4.</span> <span class="toc-text">HBase shell</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C"><span class="toc-number">4.1.</span> <span class="toc-text">基本操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9B%E5%BB%BAtable"><span class="toc-number">4.2.</span> <span class="toc-text">创建table</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#put%E6%95%B0%E6%8D%AE"><span class="toc-number">4.3.</span> <span class="toc-text">put数据</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#get%E6%95%B0%E6%8D%AE"><span class="toc-number">4.4.</span> <span class="toc-text">get数据</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#scan%E6%95%B0%E6%8D%AE"><span class="toc-number">4.5.</span> <span class="toc-text">scan数据</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#put%E6%9B%B4%E6%96%B0%E6%95%B0%E6%8D%AE"><span class="toc-number">4.6.</span> <span class="toc-text">put更新数据</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#delete%E5%88%A0%E9%99%A4"><span class="toc-number">4.7.</span> <span class="toc-text">delete删除</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#HBase%E5%8E%9F%E7%90%86%E6%B7%B1%E2%BC%8A"><span class="toc-number">5.</span> <span class="toc-text">HBase原理深⼊</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#HBase%E8%AF%BB%E6%95%B0%E6%8D%AE%E6%B5%81%E7%A8%8B"><span class="toc-number">5.1.</span> <span class="toc-text">HBase读数据流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HBase%E5%86%99%E6%95%B0%E6%8D%AE%E6%B5%81%E7%A8%8B"><span class="toc-number">5.2.</span> <span class="toc-text">HBase写数据流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HBase%E7%9A%84flush-%E5%88%B7%E5%86%99-%E5%8F%8Acompact-%E5%90%88%E5%B9%B6-%E6%9C%BA%E5%88%B6"><span class="toc-number">5.3.</span> <span class="toc-text">HBase的flush(刷写)及compact(合并)机制</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Flush%E6%9C%BA%E5%88%B6"><span class="toc-number">5.3.1.</span> <span class="toc-text">Flush机制</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%98%BB%E5%A1%9E%E6%9C%BA%E5%88%B6"><span class="toc-number">5.3.2.</span> <span class="toc-text">阻塞机制</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Compact%E5%90%88%E5%B9%B6%E6%9C%BA%E5%88%B6"><span class="toc-number">5.3.3.</span> <span class="toc-text">Compact合并机制</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Region-%E6%8B%86%E5%88%86%E6%9C%BA%E5%88%B6"><span class="toc-number">5.4.</span> <span class="toc-text">Region 拆分机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#HBase%E8%A1%A8%E7%9A%84%E9%A2%84%E5%88%86%E5%8C%BA-region"><span class="toc-number">5.5.</span> <span class="toc-text">HBase表的预分区(region)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Region-%E5%90%88%E5%B9%B6"><span class="toc-number">5.6.</span> <span class="toc-text">Region 合并</span></a></li></ol></li></ol>
                     </div>
                 </span>
             </div>
