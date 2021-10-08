@@ -6,12 +6,12 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://woaixiaoyuyu.github.io">
-  <title>大数据经典论文解读 | xiaoyuyulala</title>
+  <title>大数据经典论文解读(一) | xiaoyuyulala</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="切勿浮沙筑高台 参考链接1 参考链接2">
 <meta property="og:type" content="article">
-<meta property="og:title" content="大数据经典论文解读">
-<meta property="og:url" content="http://woaixiaoyuyu.github.io/2021/10/07/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/index.html">
+<meta property="og:title" content="大数据经典论文解读(一)">
+<meta property="og:url" content="http://woaixiaoyuyu.github.io/2021/10/08/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/index.html">
 <meta property="og:site_name" content="xiaoyuyulala">
 <meta property="og:description" content="切勿浮沙筑高台 参考链接1 参考链接2">
 <meta property="og:locale">
@@ -31,8 +31,11 @@
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/26/a8/26c9fe6a96ec705c81f171b4ab373aa8.jpg?wh=1920x1080">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/5a/6c/5aa81492a07af4898aa72038886d916c.jpg?wh=1920x354">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/fe/8d/fe9a03016b995b0c0581ce23d2b4c98d.jpg?wh=1920x1421">
-<meta property="article:published_time" content="2021-10-07T03:32:32.000Z">
-<meta property="article:modified_time" content="2021-10-07T03:32:42.458Z">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/07/b2/07fbab143fd8df45bcd3ae0064fa41b2.jpg?wh=2000x1344">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/ca/aa/caf2ae6702d838baa1e6c4b30dc0e2aa.jpg?wh=1641x1510">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/28/5a/28c60e5ed395652894dd9f6b91b2475a.jpg?wh=1920x1290">
+<meta property="article:published_time" content="2021-10-08T05:20:32.000Z">
+<meta property="article:modified_time" content="2021-10-08T05:20:54.233Z">
 <meta property="article:author" content="xiaoyuyu">
 <meta property="article:tag" content="Big Data">
 <meta name="twitter:card" content="summary">
@@ -175,13 +178,13 @@
         
   
     <h1 class="article-title" itemprop="name">
-      大数据经典论文解读
+      大数据经典论文解读(一)
     </h1>
   
 
         
-        <a href="/2021/10/07/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="archive-article-date">
-  	<time datetime="2021-10-07T03:32:32.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-10-07</time>
+        <a href="/2021/10/08/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="archive-article-date">
+  	<time datetime="2021-10-08T05:20:32.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-10-08</time>
 </a>
         
       </header>
@@ -352,7 +355,7 @@
 <h3 id="MapReduce-的性能优化"><a href="#MapReduce-的性能优化" class="headerlink" title="MapReduce 的性能优化"></a>MapReduce 的性能优化</h3><h4 id="把程序搬到数据那儿去"><a href="#把程序搬到数据那儿去" class="headerlink" title="把程序搬到数据那儿去"></a>把程序搬到数据那儿去</h4><p>既然网络带宽是瓶颈，那么优化的办法自然就是尽可能减少需要通过网络传输的数据。</p>
 <p>这就好像你想要研究金字塔，最好的办法不是把金字塔搬到你家来，而是你买张机票飞过去。这里的金字塔就是要处理的数据，而你，就是那个分配过去的 MapReduce 程序。</p>
 <h4 id="通过-Combiner-减少网络数据传输"><a href="#通过-Combiner-减少网络数据传输" class="headerlink" title="通过 Combiner 减少网络数据传输"></a>通过 Combiner 减少网络数据传输</h4><p>提前在map端提前进行一些聚合，通过 Combiner 合并本地 Map 输出的数据，来尽可能减少数据在网络上的传输。</p>
-<h2 id="08-Bigtable（一）：错失百亿的Friendster"><a href="#08-Bigtable（一）：错失百亿的Friendster" class="headerlink" title="08 | Bigtable（一）：错失百亿的Friendster"></a>08 | Bigtable（一）：错失百亿的Friendster</h2><p>在没有HBase这样强力的BigTable出现之前，一家互联网公司面对“伸缩性”这个问题，最好的选择是使用一个 MySQL 集群。</p>
+<h2 id="Bigtable（一）：错失百亿的Friendster"><a href="#Bigtable（一）：错失百亿的Friendster" class="headerlink" title="Bigtable（一）：错失百亿的Friendster"></a>Bigtable（一）：错失百亿的Friendster</h2><p>在没有HBase这样强力的BigTable出现之前，一家互联网公司面对“伸缩性”这个问题，最好的选择是使用一个 MySQL 集群。</p>
 <h3 id="分库分表的扩容方式"><a href="#分库分表的扩容方式" class="headerlink" title="分库分表的扩容方式"></a>分库分表的扩容方式</h3><p>常见的mysql集群扩展方式就是分库分表，但是首先代码逻辑上需要有对应的修改，同时移植数据的瓶颈容易发生，非常不灵活</p>
 <p>同时随着业务需求的不断增加，需要我们有极其超前的数据划分能力，但这是不科学的。</p>
 <h3 id="Bigtable-的设计目标"><a href="#Bigtable-的设计目标" class="headerlink" title="Bigtable 的设计目标"></a>Bigtable 的设计目标</h3><p>看到这里，相信你对 Bigtable 的设计目标应该更清楚了。最基础的目标自然是应对业务需求的，能够支撑百万级别随机读写 IOPS，并且伸缩到上千台服务器的一个数据库。但是光能撑起 IOPS 还不够。在这个数据量下，整个系统的“可伸缩性”和“可运维性”就变得非常重要。</p>
@@ -368,6 +371,70 @@
 <li>第一个是放弃了关系模型，也不支持 SQL 语言；</li>
 <li>第二个，则是放弃了跨行事务，Bigtable 只支持单行的事务模型。</li>
 </ul>
+<h2 id="Bigtable（二）：不认识“主人”的分布式架构"><a href="#Bigtable（二）：不认识“主人”的分布式架构" class="headerlink" title="Bigtable（二）：不认识“主人”的分布式架构"></a>Bigtable（二）：不认识“主人”的分布式架构</h2><h3 id="数据分区，可伸缩的第一步"><a href="#数据分区，可伸缩的第一步" class="headerlink" title="数据分区，可伸缩的第一步"></a>数据分区，可伸缩的第一步</h3><p>把一个数据表，根据主键的不同，拆分到多个不同的服务器上，在分布式数据库里被称之为数据分区（ Paritioning）。分区之后的每一片数据，在不同的分布式系统里有不同的名字，在 MySQL 里呢，我们一般叫做 Shard，Bigtable 里则叫做 Tablet。</p>
+<p>所以，在 Bigtable 里，我们就采用了另外一种分区方式，也就是动态区间分区。我们不再是一开始就定义好需要多少个机器，应该怎么分区，而是采用了一种自动去“分裂”（split）的方式来动态地进行分区。</p>
+<p><img src="https://static001.geekbang.org/resource/image/07/b2/07fbab143fd8df45bcd3ae0064fa41b2.jpg?wh=2000x1344"></p>
+<h3 id="通过-Master-Chubby-进行分区管理"><a href="#通过-Master-Chubby-进行分区管理" class="headerlink" title="通过 Master + Chubby 进行分区管理"></a>通过 Master + Chubby 进行分区管理</h3><p>我们还需要有一套存储、管理分区信息的机制，这在哈希分片的 MySQL 集群里是没有的。在 Bigtable 里，我们是通过 Master 和 Chubby 这两个组件来完成这个任务的。这两个组件，加上每个分片提供服务的 Tablet Server，以及实际存储数据的 GFS，共同组成了整个 Bigtable 集群。</p>
+<h3 id="Master、Chubby-和-Tablet-Server-的用途"><a href="#Master、Chubby-和-Tablet-Server-的用途" class="headerlink" title="Master、Chubby 和 Tablet Server 的用途"></a>Master、Chubby 和 Tablet Server 的用途</h3><p>Tablet Server 的角色最明确，就是用来实际提供数据读写服务的。一个 Tablet Server 上会分配到 10 到 1000 个 Tablets，Tablet Server 就去负责这些 Tablets 的读写请求，并且在单个 Tablet 太大的时候，对它们进行分裂。</p>
+<p>而哪些 Tablets 分配给哪个 Tablet Server，自然是由 Master 负责的，而且 Master 可以根据每个 Tablet Server 的负载进行动态的调度，也就是 Master 还能起到负载均衡（load balance）的作用。而这一点，也是 MySQL 集群很难做到的。</p>
+<p>这是因为，Bigtable 的 Tablet Server 只负责在线服务，不负责数据存储。实际的存储，是通过一种叫做 SSTable 的数据格式写入到 GFS 上的。也就是 Bigtable 里，数据存储和在线服务的职责是完全分离的。我们调度 Tablet 的时候，只是调度在线服务的负载，并不需要把数据也一并搬运走。</p>
+<p>事实上，Master 一共会负责 5 项工作：</p>
+<ul>
+<li>分配 Tablets 给 Tablet Server；</li>
+<li>检测 Tablet Server 的新增和过期；</li>
+<li>平衡 Tablet Server 的负载；</li>
+<li>对于 GFS 上的数据进行垃圾回收（GC）；</li>
+<li>管理表（Table）和列族的 Schema 变更，比如表和列族的创建与删除。</li>
+</ul>
+<p>Bigtable 需要 Chubby 来搞定这么几件事儿：</p>
+<ul>
+<li>确保我们只有一个 Master；</li>
+<li>存储 Bigtable 数据的引导位置（Bootstrap Location）；</li>
+<li>发现 Tablet Servers 以及在它们终止之后完成清理工作；</li>
+<li>存储 Bigtable 的 Schema 信息；</li>
+<li>存储 ACL，也就是 Bigtable 的访问权限。</li>
+</ul>
+<p>如果没有 Chubby 的话，我能想到最直接的集群管理方案，就是让所有的 Tablet Server 直接和 Master 通信，把分区信息以及 Tablets 分配到哪些 Tablet Server，也直接放在 Master 的内存里面。这个办法，就和我们之前在 GFS 里的办法一样。但是这个方案，也就使得 Master 变成了一个单点故障点（SPOF-Single Point of Failure）。当然，我们可以通过 Backup Master 以及 Shadow Master 等方式，来尽可能提升可用性。</p>
+<p>可是这样第一个问题就来了，我们在 GFS 的论文里面说过，我们可以通过一个外部服务去监控 Master 的存活，等它挂了之后，自动切换到 Backup Master。但是，我们怎么知道 Master 是真的挂了，还是只是“外部服务”和 Master 之间的网络出现故障了呢？</p>
+<p>那么 Chubby，就是这里的这个外部服务，不过 Chubby 不是 1 台服务器，而是 5 台服务器组成的一个集群，它会通过 Paxos 这样的共识算法，来确保不会出现误判。而且因为它有 5 台服务器，所以也一并解决了高可用的问题，就算挂个 1~2 台，也并不会丢数据。</p>
+<h3 id="为什么数据读写不需要-Master？"><a href="#为什么数据读写不需要-Master？" class="headerlink" title="为什么数据读写不需要 Master？"></a>为什么数据读写不需要 Master？</h3><p>Chubby 帮我们保障了只有一个 Master，那么我们再来看看分区和 Tablets 的分配信息，这些信息也没有放在 Master。Bigtable 在这里用了一个很巧妙的方法，就是直接把这个信息，存成了 Bigtable 的一张 METADATA 表，而这张表在哪里呢，它是直接存放在 Bigtable 集群里面的，其实 METADATA 表自己就是一张 Bigtable 的数据表。</p>
+<ul>
+<li>Bigtable 在 Chubby 里的一个指定的文件里，存放了一个叫做 Root Tablet 的分区所在的位置。</li>
+<li>然后，这个 Root Tablet 的分区，是 METADATA 表的第一个分区，这个分区永远不会分裂。它里面存的，是 METADATA 里其他 Tablets 所在的位置。</li>
+<li>而 METADATA 剩下的这些 Tablets，每一个 Tablet 中，都存放了用户创建的那些数据表，所包含的 Tablets 所在的位置，也就是所谓的 User Tablets 的位置。</li>
+</ul>
+<p><img src="https://static001.geekbang.org/resource/image/ca/aa/caf2ae6702d838baa1e6c4b30dc0e2aa.jpg?wh=1641x1510"></p>
+<p>这张图片还是比较清晰的展示了三层逻辑关系的结构，熟悉操作系统的同学看着应该恨亲切。</p>
+<p>那么，我们的客户端具体是怎么查询的呢？</p>
+<ul>
+<li>客户端先去发起请求，查询 Chubby，看我们的 Root Tablet 在哪里。</li>
+<li>Chubby 会告诉客户端，Root Tablet 在 5 号 Tablet Server，这里我们简写成 TS5。</li>
+<li>客户端呢，会再向 TS5 发起请求，说我要查 Root Tablet，告诉我哪一个 METADATA Tablet 里，存放了 ECOMMERCE_ORDERS 业务表，行键为 A20210101RST 的记录的位置。</li>
+<li>TS5 会从 Root Tablet 里面查询，然后告诉客户端，说这个记录的位置啊，你可以从 TS8 上面的 METADATA 的 tablet 107，找到这个信息。</li>
+<li>然后，客户端再发起请求到 TS8，说我要在 tablet 107 里面，找 ECOMMERCE_ORDERS 表，行键为 A20210101RST 具体在哪里。</li>
+<li>TS8 告诉客户端，这个数据在 TS20 的 tablet 253 里面。</li>
+<li>客户端发起最后一次请求，去问 TS20 的 tablet 253，问 ECOMMERCE_ORDERS 表，行键为 A20210101RST 的具体数据。</li>
+<li>TS20 最终会把数据返回给客户端。</li>
+</ul>
+<p><img src="https://static001.geekbang.org/resource/image/28/5a/28c60e5ed395652894dd9f6b91b2475a.jpg?wh=1920x1290"></p>
+<p>可以看到，在这个过程里，我们用了三次网络查询，找到了想要查询的数据的具体位置，然后再发起一次请求拿到最终的实际数据。一般我们会把前三次查询位置结果缓存起来，以减少往返的网络查询次数。而对于整个 METADATA 表来说，我们都会把它们保留在内存里，这样每个 Bigtable 请求都要读写的数据，就不需要通过访问 GFS 来读取到了。</p>
+<h3 id="Master-的调度者角色"><a href="#Master-的调度者角色" class="headerlink" title="Master 的调度者角色"></a>Master 的调度者角色</h3><p>的确，在单纯的数据读写的过程中不需要 Master。Master 只负责 Tablets 的调度而已，而且这个调度功能，也对 Chubby 有所依赖。我们来看一看这个过程是怎么样的：</p>
+<ul>
+<li>所有的 Tablet Server，一旦上线，就会在 Chubby 下的一个指定目录，获得一个和自己名字相同的独占锁（exclusive lock）。你可以看作是，Tablet Server 把自己注册到集群上了。</li>
+<li>Master 会一直监听这个目录，当发现一个 Tablet Server 注册了，它就知道有一个新的 Tablet Server 可以用了，也就是可以分配 Tablets。</li>
+<li>分配 Tablets 的情况很多，可能是因为其他的 Tablet Server 挂了，导致部分 Tablets 没有分配出去，或者因为别的 Tablet Server 的负载太大，这些情况都可以让 Master 去重新分配 Tablet。具体的分配策略论文里并没有说，你可以根据自己的需要实现对应的分配策略。</li>
+<li>Tablet Server 本身，是根据是否还独占着 Chubby 上对应的锁，以及锁文件是否还在，来确定自己是否还为自己分配到的 Tablets 服务。比如 Tablet Server 到 Chubby 的网络中断了，那么 Tablet Server 就会失去这个独占锁，也就不再为原先分配到的 Tablets 提供服务了。</li>
+<li>而如果我们把 Tablet Server 从集群中挪走，那么 Tablet Server 会主动释放锁，当然它也不再服务那些 Tablets 了，这些 Tablets 都需要重新分配。</li>
+<li>无论是前面的第 4、5 点这样异常或者正常的情况，都是由 Master 来检测 Tablet Server 是不是正常工作的。检测的方法也不复杂，其实就是通过心跳。Master 会定期问 Tablets，你是不是还占着独占锁呀？无论是 Tablet Server 说它不再占有锁了，还是 Master 连不上 Tablet Server 了，Master 都会做一个小小的测试，就是自己去获取这个锁。如果 Master 能够拿到这个锁，说明 Chubby 还活得好好的，那么一定是 Tablet Server 那边出了问题，Master 就会删除这个锁，确保 Tablet Server 不会再为 Tablets 提供服务。而原先 Tablet Server 上的 Tablets 就会变回一个未分配的状态，需要回到上面的第 3 点重新分配。</li>
+<li>而 Master 自己，一旦和 Chubby 之间的网络连接出现问题，也就是它和 Chubby 之间的会话过期了，它就会选择“自杀”，这个是为了避免出现两个 Master 而不自知的情况。反正，Master 的存活与否，不影响已经存在的 Tablets 分配关系，也不会影响到整个 Bigtable 数据读写的过程。</li>
+</ul>
+<h3 id="小结-1"><a href="#小结-1" class="headerlink" title="小结"></a>小结</h3><p>整个 Bigtable 是由 4 个组件组成的，分别是：</p>
+<ul>
+<li>负责存储数据的 GFS；</li>
+<li>负责作为分布式锁和目录服务的 Chubby；</li>
+<li>负责实际提供在线服务的 Tablet Server；</li>
+<li>负责调度 Tablet 和调整负载的 Master。</li>
+</ul>
 
       
 	  
@@ -380,7 +447,7 @@
     
     <br>
     <strong>本文链接：</strong>
-    http://woaixiaoyuyu.github.io/2021/10/07/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/
+    http://woaixiaoyuyu.github.io/2021/10/08/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/
     <br>
     <strong>版权声明：</strong>
     本作品采用
@@ -477,7 +544,7 @@
     <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
     <p>扫一扫，分享到微信</p>
     <div class="wx-qrcode">
-      <img src="//pan.baidu.com/share/qrcode?url=http://woaixiaoyuyu.github.io/2021/10/07/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" alt="微信分享二维码">
+      <img src="//pan.baidu.com/share/qrcode?url=http://woaixiaoyuyu.github.io/2021/10/08/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" alt="微信分享二维码">
     </div>
 </div>
 
@@ -491,18 +558,9 @@
   
 <nav id="article-nav">
   
-    <a href="/2021/10/07/HBase%E6%93%8D%E4%BD%9C%E7%AC%94%E8%AE%B0/" id="article-nav-newer" class="article-nav-link-wrap">
-      <i class="icon-circle-left"></i>
-      <div class="article-nav-title">
-        
-          HBase操作笔记
-        
-      </div>
-    </a>
   
-  
-    <a href="/2021/09/05/%E8%B0%83%E4%BC%98/" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title">调优</div>
+    <a href="/2021/10/07/HBase%E6%93%8D%E4%BD%9C%E7%AC%94%E8%AE%B0/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">HBase操作笔记</div>
       <i class="icon-circle-right"></i>
     </a>
   
@@ -529,7 +587,7 @@
                 </span>
                 <span class="tooltip-content">
                     <div class="toc-article">
-                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%A7%E6%95%B0%E6%8D%AE%E6%8A%80%E6%9C%AF%E7%9A%84%E6%A0%B8%E5%BF%83%E7%90%86%E5%BF%B5"><span class="toc-number">1.</span> <span class="toc-text">大数据技术的核心理念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%A7%E6%95%B0%E6%8D%AE%E6%8A%80%E6%9C%AF%E7%9A%84%E6%9D%A5%E9%BE%99%E4%B8%8E%E5%8E%BB%E8%84%89"><span class="toc-number">2.</span> <span class="toc-text">大数据技术的来龙与去脉</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E9%A9%BE%E9%A9%AC%E8%BD%A6%E5%92%8C%E5%9F%BA%E7%A1%80%E8%AE%BE%E6%96%BD"><span class="toc-number">2.1.</span> <span class="toc-text">三驾马车和基础设施</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#OLAP-%E5%92%8C-OLTP-%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="toc-number">2.2.</span> <span class="toc-text">OLAP 和 OLTP 数据库</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E6%97%B6%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86%E7%9A%84%E6%8A%BD%E8%B1%A1%E8%BF%9B%E5%8C%96"><span class="toc-number">2.3.</span> <span class="toc-text">实时数据处理的抽象进化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B0%86%E6%89%80%E6%9C%89%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%94%BE%E5%9C%A8%E4%B8%80%E8%B5%B7%E7%9A%84%E8%B5%84%E6%BA%90%E8%B0%83%E5%BA%A6"><span class="toc-number">2.4.</span> <span class="toc-text">将所有服务器放在一起的资源调度</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-number">2.5.</span> <span class="toc-text">小结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%EF%BC%9A%E5%BB%BA%E7%AB%8B%E4%BD%A0%E7%9A%84%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%9F%A5%E8%AF%86%E7%BD%91%E7%BB%9C"><span class="toc-number">3.</span> <span class="toc-text">学习方法：建立你的大数据知识网络</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%A7%E6%95%B0%E6%8D%AE%E9%A2%86%E5%9F%9F%E7%9A%84%E7%9F%A5%E8%AF%86%E5%9C%B0%E5%9B%BE"><span class="toc-number">3.1.</span> <span class="toc-text">大数据领域的知识地图</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#The-Google-File-System-%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9A-Master%E7%9A%84%E4%B8%89%E4%B8%AA%E8%BA%AB%E4%BB%BD"><span class="toc-number">4.</span> <span class="toc-text">The Google File System （一）： Master的三个身份</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Master-%E7%9A%84%E7%AC%AC%E4%B8%80%E4%B8%AA%E8%BA%AB%E4%BB%BD%EF%BC%9A%E4%B8%80%E4%B8%AA%E7%9B%AE%E5%BD%95%E6%9C%8D%E5%8A%A1"><span class="toc-number">4.1.</span> <span class="toc-text">Master 的第一个身份：一个目录服务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#master-%E7%9A%84%E5%BF%AB%E9%80%9F%E6%81%A2%E5%A4%8D%E6%80%A7%E5%92%8C%E5%8F%AF%E7%94%A8%E6%80%A7%E4%BF%9D%E9%9A%9C"><span class="toc-number">4.2.</span> <span class="toc-text">master 的快速恢复性和可用性保障</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Shadow-Master"><span class="toc-number">4.3.</span> <span class="toc-text">Shadow Master</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#The-Google-File-System-%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9A-%E5%A6%82%E4%BD%95%E5%BA%94%E5%AF%B9%E7%BD%91%E7%BB%9C%E7%93%B6%E9%A2%88%EF%BC%9F"><span class="toc-number">5.</span> <span class="toc-text">The Google File System （二）： 如何应对网络瓶颈？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#GFS-%E7%9A%84%E6%95%B0%E6%8D%AE%E5%86%99%E5%85%A5"><span class="toc-number">5.1.</span> <span class="toc-text">GFS 的数据写入</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%86%E7%A6%BB%E6%8E%A7%E5%88%B6%E6%B5%81%E5%92%8C%E6%95%B0%E6%8D%AE%E6%B5%81"><span class="toc-number">5.1.1.</span> <span class="toc-text">分离控制流和数据流</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B5%81%E6%B0%B4%E7%BA%BF%E5%BC%8F%E7%9A%84%E7%BD%91%E7%BB%9C%E6%95%B0%E6%8D%AE%E4%BC%A0%E8%BE%93"><span class="toc-number">5.1.2.</span> <span class="toc-text">流水线式的网络数据传输</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%8B%AC%E7%89%B9%E7%9A%84-Snapshot-%E6%93%8D%E4%BD%9C"><span class="toc-number">5.1.3.</span> <span class="toc-text">独特的 Snapshot 操作</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#The-Google-File-System-%EF%BC%88%E4%B8%89%EF%BC%89%EF%BC%9A-%E5%A4%9A%E5%86%99%E5%87%A0%E6%AC%A1%E4%B9%9F%E6%B2%A1%E5%85%B3%E7%B3%BB"><span class="toc-number">6.</span> <span class="toc-text">The Google File System （三）： 多写几次也没关系</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%BD%E5%8A%A0%E5%86%99%E5%85%A5%E7%9A%84%E2%80%9C%E8%87%B3%E5%B0%91%E4%B8%80%E6%AC%A1%E2%80%9D%E7%9A%84%E4%BF%9D%E9%9A%9C"><span class="toc-number">6.1.</span> <span class="toc-text">追加写入的“至少一次”的保障</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MapReduce%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9A%E6%BA%90%E8%B5%B7Unix%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%80%9D%E6%83%B3"><span class="toc-number">7.</span> <span class="toc-text">MapReduce（一）：源起Unix的设计思想</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#MapReduce-%E7%9A%84%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-number">7.1.</span> <span class="toc-text">MapReduce 的应用场景</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F-grep"><span class="toc-number">7.1.1.</span> <span class="toc-text">分布式 grep</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BB%9F%E8%AE%A1-URL-%E7%9A%84%E8%AE%BF%E9%97%AE%E9%A2%91%E6%AC%A1"><span class="toc-number">7.1.2.</span> <span class="toc-text">统计 URL 的访问频次</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MapReduce%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9A%E4%B8%8D%E6%80%95%E5%A4%B1%E8%B4%A5%E7%9A%84%E8%AE%A1%E7%AE%97%E6%A1%86%E6%9E%B6"><span class="toc-number">8.</span> <span class="toc-text">MapReduce（二）：不怕失败的计算框架</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#MapReduce-%E6%A1%86%E6%9E%B6%E7%9A%84%E4%B8%89%E4%B8%AA%E6%8C%91%E6%88%98"><span class="toc-number">8.1.</span> <span class="toc-text">MapReduce 框架的三个挑战</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MapReduce-%E7%9A%84%E5%8D%8F%E5%90%8C"><span class="toc-number">8.2.</span> <span class="toc-text">MapReduce 的协同</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MapReduce-%E7%9A%84%E5%AE%B9%E9%94%99%EF%BC%88Fault-Tolerance%EF%BC%89"><span class="toc-number">8.3.</span> <span class="toc-text">MapReduce 的容错（Fault Tolerance）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MapReduce-%E7%9A%84%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96"><span class="toc-number">8.4.</span> <span class="toc-text">MapReduce 的性能优化</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8A%8A%E7%A8%8B%E5%BA%8F%E6%90%AC%E5%88%B0%E6%95%B0%E6%8D%AE%E9%82%A3%E5%84%BF%E5%8E%BB"><span class="toc-number">8.4.1.</span> <span class="toc-text">把程序搬到数据那儿去</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%80%9A%E8%BF%87-Combiner-%E5%87%8F%E5%B0%91%E7%BD%91%E7%BB%9C%E6%95%B0%E6%8D%AE%E4%BC%A0%E8%BE%93"><span class="toc-number">8.4.2.</span> <span class="toc-text">通过 Combiner 减少网络数据传输</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#08-Bigtable%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9A%E9%94%99%E5%A4%B1%E7%99%BE%E4%BA%BF%E7%9A%84Friendster"><span class="toc-number">9.</span> <span class="toc-text">08 | Bigtable（一）：错失百亿的Friendster</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E5%BA%93%E5%88%86%E8%A1%A8%E7%9A%84%E6%89%A9%E5%AE%B9%E6%96%B9%E5%BC%8F"><span class="toc-number">9.1.</span> <span class="toc-text">分库分表的扩容方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Bigtable-%E7%9A%84%E8%AE%BE%E8%AE%A1%E7%9B%AE%E6%A0%87"><span class="toc-number">9.2.</span> <span class="toc-text">Bigtable 的设计目标</span></a></li></ol></li></ol>
+                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%A7%E6%95%B0%E6%8D%AE%E6%8A%80%E6%9C%AF%E7%9A%84%E6%A0%B8%E5%BF%83%E7%90%86%E5%BF%B5"><span class="toc-number">1.</span> <span class="toc-text">大数据技术的核心理念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A4%A7%E6%95%B0%E6%8D%AE%E6%8A%80%E6%9C%AF%E7%9A%84%E6%9D%A5%E9%BE%99%E4%B8%8E%E5%8E%BB%E8%84%89"><span class="toc-number">2.</span> <span class="toc-text">大数据技术的来龙与去脉</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E9%A9%BE%E9%A9%AC%E8%BD%A6%E5%92%8C%E5%9F%BA%E7%A1%80%E8%AE%BE%E6%96%BD"><span class="toc-number">2.1.</span> <span class="toc-text">三驾马车和基础设施</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#OLAP-%E5%92%8C-OLTP-%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="toc-number">2.2.</span> <span class="toc-text">OLAP 和 OLTP 数据库</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E6%97%B6%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86%E7%9A%84%E6%8A%BD%E8%B1%A1%E8%BF%9B%E5%8C%96"><span class="toc-number">2.3.</span> <span class="toc-text">实时数据处理的抽象进化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B0%86%E6%89%80%E6%9C%89%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%94%BE%E5%9C%A8%E4%B8%80%E8%B5%B7%E7%9A%84%E8%B5%84%E6%BA%90%E8%B0%83%E5%BA%A6"><span class="toc-number">2.4.</span> <span class="toc-text">将所有服务器放在一起的资源调度</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-number">2.5.</span> <span class="toc-text">小结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AD%A6%E4%B9%A0%E6%96%B9%E6%B3%95%EF%BC%9A%E5%BB%BA%E7%AB%8B%E4%BD%A0%E7%9A%84%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%9F%A5%E8%AF%86%E7%BD%91%E7%BB%9C"><span class="toc-number">3.</span> <span class="toc-text">学习方法：建立你的大数据知识网络</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%A7%E6%95%B0%E6%8D%AE%E9%A2%86%E5%9F%9F%E7%9A%84%E7%9F%A5%E8%AF%86%E5%9C%B0%E5%9B%BE"><span class="toc-number">3.1.</span> <span class="toc-text">大数据领域的知识地图</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#The-Google-File-System-%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9A-Master%E7%9A%84%E4%B8%89%E4%B8%AA%E8%BA%AB%E4%BB%BD"><span class="toc-number">4.</span> <span class="toc-text">The Google File System （一）： Master的三个身份</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Master-%E7%9A%84%E7%AC%AC%E4%B8%80%E4%B8%AA%E8%BA%AB%E4%BB%BD%EF%BC%9A%E4%B8%80%E4%B8%AA%E7%9B%AE%E5%BD%95%E6%9C%8D%E5%8A%A1"><span class="toc-number">4.1.</span> <span class="toc-text">Master 的第一个身份：一个目录服务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#master-%E7%9A%84%E5%BF%AB%E9%80%9F%E6%81%A2%E5%A4%8D%E6%80%A7%E5%92%8C%E5%8F%AF%E7%94%A8%E6%80%A7%E4%BF%9D%E9%9A%9C"><span class="toc-number">4.2.</span> <span class="toc-text">master 的快速恢复性和可用性保障</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Shadow-Master"><span class="toc-number">4.3.</span> <span class="toc-text">Shadow Master</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#The-Google-File-System-%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9A-%E5%A6%82%E4%BD%95%E5%BA%94%E5%AF%B9%E7%BD%91%E7%BB%9C%E7%93%B6%E9%A2%88%EF%BC%9F"><span class="toc-number">5.</span> <span class="toc-text">The Google File System （二）： 如何应对网络瓶颈？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#GFS-%E7%9A%84%E6%95%B0%E6%8D%AE%E5%86%99%E5%85%A5"><span class="toc-number">5.1.</span> <span class="toc-text">GFS 的数据写入</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%86%E7%A6%BB%E6%8E%A7%E5%88%B6%E6%B5%81%E5%92%8C%E6%95%B0%E6%8D%AE%E6%B5%81"><span class="toc-number">5.1.1.</span> <span class="toc-text">分离控制流和数据流</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B5%81%E6%B0%B4%E7%BA%BF%E5%BC%8F%E7%9A%84%E7%BD%91%E7%BB%9C%E6%95%B0%E6%8D%AE%E4%BC%A0%E8%BE%93"><span class="toc-number">5.1.2.</span> <span class="toc-text">流水线式的网络数据传输</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%8B%AC%E7%89%B9%E7%9A%84-Snapshot-%E6%93%8D%E4%BD%9C"><span class="toc-number">5.1.3.</span> <span class="toc-text">独特的 Snapshot 操作</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#The-Google-File-System-%EF%BC%88%E4%B8%89%EF%BC%89%EF%BC%9A-%E5%A4%9A%E5%86%99%E5%87%A0%E6%AC%A1%E4%B9%9F%E6%B2%A1%E5%85%B3%E7%B3%BB"><span class="toc-number">6.</span> <span class="toc-text">The Google File System （三）： 多写几次也没关系</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%BD%E5%8A%A0%E5%86%99%E5%85%A5%E7%9A%84%E2%80%9C%E8%87%B3%E5%B0%91%E4%B8%80%E6%AC%A1%E2%80%9D%E7%9A%84%E4%BF%9D%E9%9A%9C"><span class="toc-number">6.1.</span> <span class="toc-text">追加写入的“至少一次”的保障</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MapReduce%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9A%E6%BA%90%E8%B5%B7Unix%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%80%9D%E6%83%B3"><span class="toc-number">7.</span> <span class="toc-text">MapReduce（一）：源起Unix的设计思想</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#MapReduce-%E7%9A%84%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-number">7.1.</span> <span class="toc-text">MapReduce 的应用场景</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F-grep"><span class="toc-number">7.1.1.</span> <span class="toc-text">分布式 grep</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BB%9F%E8%AE%A1-URL-%E7%9A%84%E8%AE%BF%E9%97%AE%E9%A2%91%E6%AC%A1"><span class="toc-number">7.1.2.</span> <span class="toc-text">统计 URL 的访问频次</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MapReduce%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9A%E4%B8%8D%E6%80%95%E5%A4%B1%E8%B4%A5%E7%9A%84%E8%AE%A1%E7%AE%97%E6%A1%86%E6%9E%B6"><span class="toc-number">8.</span> <span class="toc-text">MapReduce（二）：不怕失败的计算框架</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#MapReduce-%E6%A1%86%E6%9E%B6%E7%9A%84%E4%B8%89%E4%B8%AA%E6%8C%91%E6%88%98"><span class="toc-number">8.1.</span> <span class="toc-text">MapReduce 框架的三个挑战</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MapReduce-%E7%9A%84%E5%8D%8F%E5%90%8C"><span class="toc-number">8.2.</span> <span class="toc-text">MapReduce 的协同</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MapReduce-%E7%9A%84%E5%AE%B9%E9%94%99%EF%BC%88Fault-Tolerance%EF%BC%89"><span class="toc-number">8.3.</span> <span class="toc-text">MapReduce 的容错（Fault Tolerance）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MapReduce-%E7%9A%84%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96"><span class="toc-number">8.4.</span> <span class="toc-text">MapReduce 的性能优化</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8A%8A%E7%A8%8B%E5%BA%8F%E6%90%AC%E5%88%B0%E6%95%B0%E6%8D%AE%E9%82%A3%E5%84%BF%E5%8E%BB"><span class="toc-number">8.4.1.</span> <span class="toc-text">把程序搬到数据那儿去</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%80%9A%E8%BF%87-Combiner-%E5%87%8F%E5%B0%91%E7%BD%91%E7%BB%9C%E6%95%B0%E6%8D%AE%E4%BC%A0%E8%BE%93"><span class="toc-number">8.4.2.</span> <span class="toc-text">通过 Combiner 减少网络数据传输</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Bigtable%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9A%E9%94%99%E5%A4%B1%E7%99%BE%E4%BA%BF%E7%9A%84Friendster"><span class="toc-number">9.</span> <span class="toc-text">Bigtable（一）：错失百亿的Friendster</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E5%BA%93%E5%88%86%E8%A1%A8%E7%9A%84%E6%89%A9%E5%AE%B9%E6%96%B9%E5%BC%8F"><span class="toc-number">9.1.</span> <span class="toc-text">分库分表的扩容方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Bigtable-%E7%9A%84%E8%AE%BE%E8%AE%A1%E7%9B%AE%E6%A0%87"><span class="toc-number">9.2.</span> <span class="toc-text">Bigtable 的设计目标</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Bigtable%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9A%E4%B8%8D%E8%AE%A4%E8%AF%86%E2%80%9C%E4%B8%BB%E4%BA%BA%E2%80%9D%E7%9A%84%E5%88%86%E5%B8%83%E5%BC%8F%E6%9E%B6%E6%9E%84"><span class="toc-number">10.</span> <span class="toc-text">Bigtable（二）：不认识“主人”的分布式架构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E5%88%86%E5%8C%BA%EF%BC%8C%E5%8F%AF%E4%BC%B8%E7%BC%A9%E7%9A%84%E7%AC%AC%E4%B8%80%E6%AD%A5"><span class="toc-number">10.1.</span> <span class="toc-text">数据分区，可伸缩的第一步</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%9A%E8%BF%87-Master-Chubby-%E8%BF%9B%E8%A1%8C%E5%88%86%E5%8C%BA%E7%AE%A1%E7%90%86"><span class="toc-number">10.2.</span> <span class="toc-text">通过 Master + Chubby 进行分区管理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Master%E3%80%81Chubby-%E5%92%8C-Tablet-Server-%E7%9A%84%E7%94%A8%E9%80%94"><span class="toc-number">10.3.</span> <span class="toc-text">Master、Chubby 和 Tablet Server 的用途</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E6%95%B0%E6%8D%AE%E8%AF%BB%E5%86%99%E4%B8%8D%E9%9C%80%E8%A6%81-Master%EF%BC%9F"><span class="toc-number">10.4.</span> <span class="toc-text">为什么数据读写不需要 Master？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Master-%E7%9A%84%E8%B0%83%E5%BA%A6%E8%80%85%E8%A7%92%E8%89%B2"><span class="toc-number">10.5.</span> <span class="toc-text">Master 的调度者角色</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93-1"><span class="toc-number">10.6.</span> <span class="toc-text">小结</span></a></li></ol></li></ol>
                     </div>
                 </span>
             </div>
