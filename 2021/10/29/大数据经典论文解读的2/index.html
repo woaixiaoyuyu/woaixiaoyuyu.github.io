@@ -6,17 +6,23 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://woaixiaoyuyu.github.io">
-  <title>Archives | xiaoyuyulala</title>
+  <title>大数据经典论文解读(二) | xiaoyuyulala</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="wo~ai~xiaoyuyu">
-<meta property="og:type" content="website">
-<meta property="og:title" content="xiaoyuyulala">
-<meta property="og:url" content="http://woaixiaoyuyu.github.io/archives/page/2/index.html">
+  <meta name="description" content="切勿浮沙筑高台 参考链接1 参考链接2">
+<meta property="og:type" content="article">
+<meta property="og:title" content="大数据经典论文解读(二)">
+<meta property="og:url" content="http://woaixiaoyuyu.github.io/2021/10/29/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%842/index.html">
 <meta property="og:site_name" content="xiaoyuyulala">
-<meta property="og:description" content="wo~ai~xiaoyuyu">
+<meta property="og:description" content="切勿浮沙筑高台 参考链接1 参考链接2">
 <meta property="og:locale">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/e7/7b/e773c5d530304461d5e122333c3f687b.jpg?wh=2000x1980">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/55/90/55ba476cb8de7fa509568cfa65330390.jpg?wh=2000x1980">
+<meta property="article:published_time" content="2021-10-29T03:52:32.000Z">
+<meta property="article:modified_time" content="2021-10-29T03:52:36.036Z">
 <meta property="article:author" content="xiaoyuyu">
+<meta property="article:tag" content="Big Data">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://static001.geekbang.org/resource/image/e7/7b/e773c5d530304461d5e122333c3f687b.jpg?wh=2000x1980">
   
     <link rel="alternative" href="/atom.xml" title="xiaoyuyulala" type="application/atom+xml">
   
@@ -148,284 +154,113 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
-  
-  
+            <article id="post-大数据经典论文解读的2" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
     
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      大数据经典论文解读(二)
+    </h1>
+  
+
+        
+        <a href="/2021/10/29/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%842/" class="archive-article-date">
+  	<time datetime="2021-10-29T03:52:32.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-10-29</time>
+</a>
+        
+      </header>
     
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>切勿浮沙筑高台</p>
+<p><a target="_blank" rel="noopener" href="https://time.geekbang.org/column/article/418468?cid=100091101">参考链接1</a></p>
+<p><a target="_blank" rel="noopener" href="http://duanple.com/?p=170">参考链接2</a></p>
+<span id="more"></span>
+
+<h2 id="Hive：来来去去的DSL，永生不死的SQL"><a href="#Hive：来来去去的DSL，永生不死的SQL" class="headerlink" title="Hive：来来去去的DSL，永生不死的SQL"></a>Hive：来来去去的DSL，永生不死的SQL</h2><h3 id="Hive-的设计目标"><a href="#Hive-的设计目标" class="headerlink" title="Hive 的设计目标"></a>Hive 的设计目标</h3><ul>
+<li>对于 Facebook 当时的数据体量来说，如果使用商业的关系型数据库，面临的瓶颈是计算时间，可能一个每日生成的数据报表一天都跑不完，或者一个临时性的分析任务（ad-hoc）也需要等待很长时间。从这个角度来看，我们等不起机器的时间。</li>
+<li>MapReduce 提供的编程模型和接口仍然太“底层”（low-level）了。即使做一个简单的 URL 访问频次的统计，你也需要通过写一段代码来完成。而不少分析师并不擅长写程序，稍微复杂一些的统计逻辑，可能需要好几个 MapReduce 任务，花上个几天时间。从这个角度来看，我们等不起人的时间。</li>
+</ul>
+<p>所以针对这两个瓶颈问题，Hive 的解法和思路也很明确，那就是通过一个系统，我们可以写 SQL 来执行 MapReduce 任务。</p>
+<h3 id="Hive-的数据模型"><a href="#Hive-的数据模型" class="headerlink" title="Hive 的数据模型"></a>Hive 的数据模型</h3><p>但是，从原始的 MapReduce 任务，到 SQL 语言之间，其实有很多鸿沟。</p>
+<p>首先就是序列化和类型信息，基于 SQL 的数据库，有明确的表结构，每个字段的类型也都是明确的。而原先的 MapReduce 里，是没有明确的字段以及字段类型的定义的。所以，填补这个鸿沟的第一步，就是先要在数据的输入输出部分加上类型系统。</p>
+<h3 id="Hive-的数据存储"><a href="#Hive-的数据存储" class="headerlink" title="Hive 的数据存储"></a>Hive 的数据存储</h3><p>Hive 的表的底层数据，其实就是以文件的形式存放在 HDFS 上的。而且存储的方式也非常直观，就是一张 Hive 的表，就占用一个 HDFS 里的目录，里面会存放很多个文件，也就是实际的数据文件。而通过 Hive 运行 HQL，其实也是通过 MapReduce 任务扫描这些文件，获得计算的结果。</p>
+<p>Hive 采用了一个数据库里面常用的解决办法，也就是分区（Partition）。Hive 里的分区非常简单，其实就是把不同分区的文件，放到表的目录所在的不同子目录下。</p>
+<p>而在分区之外，Hive 还进一步提供了一个分桶（Bucket）的数据划分方式。</p>
+<p>在分区之后的子目录里，Hive 还能够让我们针对数据的某一列的 Hash 值，取模之后分成多个文件。这个分桶，虽然不能让我们在分析查询数据的时候，快速过滤掉数据不进行检索，但是却提供了一个采样分析的功能。这样的数据采样，可以帮助数据分析师快速定性地判断问题，等到有了一些初步结论之后，再在完整的数据集上运行，获得更精确的结果。</p>
+<h3 id="Hive-的架构与性能"><a href="#Hive-的架构与性能" class="headerlink" title="Hive 的架构与性能"></a>Hive 的架构与性能</h3><ul>
+<li>一系列的对外接口</li>
+<li>驱动器<ul>
+<li>首先是一个编译器</li>
+<li>然后是一个优化器</li>
+<li>最后是一个执行引擎和一个有向无环图</li>
+</ul>
+</li>
+<li>Metastore</li>
+</ul>
+<h2 id="从Dremel到Parquet（一）：深入剖析列式存储"><a href="#从Dremel到Parquet（一）：深入剖析列式存储" class="headerlink" title="从Dremel到Parquet（一）：深入剖析列式存储"></a>从Dremel到Parquet（一）：深入剖析列式存储</h2><h3 id="从行存储到列存储"><a href="#从行存储到列存储" class="headerlink" title="从行存储到列存储"></a>从行存储到列存储</h3><p>无论是上节课我们看到的最初版本的 Hive，还是更之前看过的 Thrift，它们存储数据的方式都是“行存储”。所谓的行存储，就是一行（Row）或者说一条数据，是连续存储在一起的。这对于我们写程序去解析数据来说非常方便，我们只需要顺序读取数据，然后反序列化出来一个个对象，遍历去顺序处理就好了。</p>
+<p>对于硬盘来说，顺序读远远要优于随机读。</p>
+<p>我们能不能不要一行一行存储数据，而是一列一列存储数据？最极端的情况下，我们可以把每一列的数据都单独存储成一个文件。</p>
+<p>对于追加写入的数据，我们可以先写 WAL 日志，然后再把数据更新到内存中，接着再从内存里面，定期导出按列存储的文件到硬盘上。一个 MapReduce 程序，把原来的按行存储的数据做一个格式转换就好了，在这个 MapReduce 的过程中，数据的读写都是顺序的，我们的分析程序也只需要读取这个数据转换的结果就好了。</p>
+<h3 id="解决嵌套结构问题"><a href="#解决嵌套结构问题" class="headerlink" title="解决嵌套结构问题"></a>解决嵌套结构问题</h3><p>而 Dremel 的论文，就对重复嵌套字段和可选字段这两个问题提供了一个解决方案，那就是除了在列里存储每一个值之外，它还额外存储了两个字段。有了这两个字段，我们就能反向组装出原来的一行行数据了。</p>
+<ul>
+<li>第一个字段叫做 Repetition Level，用来告诉我们，当前这个值相对于上一次出现，是由第几层嵌套结构引起的。</li>
+<li>第二个字段叫做 Definition Level，用来告诉我们，当一个字段是 Optional，也就是可选的时候，它现在没有填充值，是因为多层嵌套的哪一层的字段为空。</li>
+</ul>
+<p><img src="https://static001.geekbang.org/resource/image/e7/7b/e773c5d530304461d5e122333c3f687b.jpg?wh=2000x1980"></p>
+<p>对于很多取值为 NULL 的字段来说，我们并不知道它为空，是因为自己作为一个 Optional 字段，所以没有值，还是由于上一层的 Optional 字段的整个对象为空。而这个 Definition Level，是要告诉我们，对于取值为 NULL 的对象，具体到哪一层 Optional 的对象的值变成了 NULL。知道了这个信息，我们通过列数据反向组装成行对象的时候，就能够 100% 还原了，不会出现不知道哪一层结构应该设置为空的情况。</p>
+<p><img src="https://static001.geekbang.org/resource/image/55/90/55ba476cb8de7fa509568cfa65330390.jpg?wh=2000x1980"></p>
+<p>这里图片文字有个小问题：country为空，是因为第1层的language没有值，所以d=1</p>
+
+      
+	  
+
+
+  <div class="declare">
+    <strong>本文作者：</strong>
+    
+      xiaoyuyu
+    
+    <br>
+    <strong>本文链接：</strong>
+    http://woaixiaoyuyu.github.io/2021/10/29/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%842/
+    <br>
+    <strong>版权声明：</strong>
+    本作品采用
+    <a rel="license noopener" target="_blank" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议</a>
+    进行许可。转载请注明出处！
+    
+  </div>
+
+
+      
+        <div class="page-reward">
+          <a href="javascript:;" class="page-reward-btn tooltip-top">
+            <div class="tooltip tooltip-east">
+            <span class="tooltip-item">
+              赏
+            </span>
+            <span class="tooltip-content">
+              <span class="tooltip-text">
+                <span class="tooltip-inner">
+                  <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢你请我吃糖果<i class="icon icon-quo-right"></i></p>
+                  <div class="reward-box">
+                    
+                    
+                  </div>
+                </span>
+              </span>
+            </span>
+          </div>
+          </a>
+        </div>
+      
+    </div>
+    <div class="article-info article-info-index">
       
       
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2021" class="archive-year">2021</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2021/08/02/%E7%94%B5%E5%95%86%E7%94%A8%E6%88%B7%E8%A1%8C%E4%B8%BA%E5%88%86%E6%9E%90/" class="archive-article-date">
-  	<time datetime="2021-08-02T01:45:56.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-08-02</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2021/08/02/%E7%94%B5%E5%95%86%E7%94%A8%E6%88%B7%E8%A1%8C%E4%B8%BA%E5%88%86%E6%9E%90/">电商用户行为分析-Flink</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">Big Data</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Flink</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2021/07/28/Apache%20Atlas%20%E6%96%87%E6%A1%A3/" class="archive-article-date">
-  	<time datetime="2021-07-28T14:27:14.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-07-28</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2021/07/28/Apache%20Atlas%20%E6%96%87%E6%A1%A3/">Apache Atlas 文档</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">Big Data</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">元数据管理</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2021/07/26/FlinkCEP%20-%20Complex%20event%20processing%20for%20Flink/" class="archive-article-date">
-  	<time datetime="2021-07-26T09:27:56.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-07-26</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2021/07/26/FlinkCEP%20-%20Complex%20event%20processing%20for%20Flink/">FlinkCEP - Complex event processing for Flink</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">Big Data</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Flink</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2021/07/24/Flink%20trigger/" class="archive-article-date">
-  	<time datetime="2021-07-24T09:51:42.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-07-24</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2021/07/24/Flink%20trigger/">Flink trigger</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">Big Data</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Flink</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2021/07/14/Flink%20%E5%85%A5%E9%97%A8%E6%A1%88%E4%BE%8B/" class="archive-article-date">
-  	<time datetime="2021-07-14T14:42:36.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-07-14</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2021/07/14/Flink%20%E5%85%A5%E9%97%A8%E6%A1%88%E4%BE%8B/">Flink 入门案例</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">Big Data</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Flink</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2021/07/12/%E4%BA%92%E8%81%94%E7%BD%91%E5%B9%BF%E5%91%8A%E4%BB%98%E8%B4%B9%E6%A8%A1%E5%BC%8F%E4%B8%93%E4%B8%9A%E6%9C%AF%E8%AF%AD%E5%A4%A7%E7%9B%98%E7%82%B9/" class="archive-article-date">
-  	<time datetime="2021-07-12T13:19:11.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-07-12</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2021/07/12/%E4%BA%92%E8%81%94%E7%BD%91%E5%B9%BF%E5%91%8A%E4%BB%98%E8%B4%B9%E6%A8%A1%E5%BC%8F%E4%B8%93%E4%B8%9A%E6%9C%AF%E8%AF%AD%E5%A4%A7%E7%9B%98%E7%82%B9/">互联网广告专业术语大盘点</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">互联网广告</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2021/07/10/Hivesparkpresto%20join%E7%AD%96%E7%95%A5/" class="archive-article-date">
-  	<time datetime="2021-07-10T12:22:44.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-07-10</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2021/07/10/Hivesparkpresto%20join%E7%AD%96%E7%95%A5/">Hive/spark/presto join策略</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
@@ -437,144 +272,118 @@
 		</ul>
 	</div>
 
-          
+      
 
+      
+
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
         </div>
-        <div class="clearfix"></div>
-    </header>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//pan.baidu.com/share/qrcode?url=http://woaixiaoyuyu.github.io/2021/10/29/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%842/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
+
   
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2021/07/09/Presto%20migrating%20from%20Hive/" class="archive-article-date">
-  	<time datetime="2021-07-09T13:17:12.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-07-09</time>
-</a>
+<nav id="article-nav">
+  
+  
+    <a href="/2021/10/22/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">大数据经典论文解读(一)</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
         </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2021/07/09/Presto%20migrating%20from%20Hive/">Presto migrating from Hive</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">Big Data</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">Presto</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
+        
+        
+        <div class="toc-container tooltip-left">
+            <i class="icon-font icon-category"></i>
+            <div class="tooltip tooltip-east">
+                <span class="tooltip-item">
+                </span>
+                <span class="tooltip-content">
+                    <div class="toc-article">
+                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Hive%EF%BC%9A%E6%9D%A5%E6%9D%A5%E5%8E%BB%E5%8E%BB%E7%9A%84DSL%EF%BC%8C%E6%B0%B8%E7%94%9F%E4%B8%8D%E6%AD%BB%E7%9A%84SQL"><span class="toc-number">1.</span> <span class="toc-text">Hive：来来去去的DSL，永生不死的SQL</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Hive-%E7%9A%84%E8%AE%BE%E8%AE%A1%E7%9B%AE%E6%A0%87"><span class="toc-number">1.1.</span> <span class="toc-text">Hive 的设计目标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Hive-%E7%9A%84%E6%95%B0%E6%8D%AE%E6%A8%A1%E5%9E%8B"><span class="toc-number">1.2.</span> <span class="toc-text">Hive 的数据模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Hive-%E7%9A%84%E6%95%B0%E6%8D%AE%E5%AD%98%E5%82%A8"><span class="toc-number">1.3.</span> <span class="toc-text">Hive 的数据存储</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Hive-%E7%9A%84%E6%9E%B6%E6%9E%84%E4%B8%8E%E6%80%A7%E8%83%BD"><span class="toc-number">1.4.</span> <span class="toc-text">Hive 的架构与性能</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8EDremel%E5%88%B0Parquet%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9A%E6%B7%B1%E5%85%A5%E5%89%96%E6%9E%90%E5%88%97%E5%BC%8F%E5%AD%98%E5%82%A8"><span class="toc-number">2.</span> <span class="toc-text">从Dremel到Parquet（一）：深入剖析列式存储</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%8E%E8%A1%8C%E5%AD%98%E5%82%A8%E5%88%B0%E5%88%97%E5%AD%98%E5%82%A8"><span class="toc-number">2.1.</span> <span class="toc-text">从行存储到列存储</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E5%B5%8C%E5%A5%97%E7%BB%93%E6%9E%84%E9%97%AE%E9%A2%98"><span class="toc-number">2.2.</span> <span class="toc-text">解决嵌套结构问题</span></a></li></ol></li></ol>
+                    </div>
+                </span>
+            </div>
         </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
+        
+    </div>
+</aside>
+
+
+
   
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2021/07/04/%E5%A4%A7%E6%95%B0%E5%A4%84%E7%90%86/" class="archive-article-date">
-  	<time datetime="2021-07-04T10:40:11.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-07-04</time>
-</a>
-        </div>
-    	 
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2021/07/04/%E5%A4%A7%E6%95%B0%E5%A4%84%E7%90%86/">大数处理</a>
-    </h1>
   
 
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">算法</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2021/07/03/Spark%E5%B8%B8%E7%94%A8%E4%BB%A3%E7%A0%81%E6%AE%B5/" class="archive-article-date">
-  	<time datetime="2021-07-03T12:17:24.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-07-03</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2021/07/03/Spark%E5%B8%B8%E7%94%A8%E4%BB%A3%E7%A0%81%E6%AE%B5/">Spark/Scala note</a>
-    </h1>
   
 
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">Big Data</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Spark</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-  
-    </div></section>
   
 
-    
-    <nav id="page-nav">
-      <a class="extend prev" rel="prev" href="/archives/">&amp;laquo; Prev</a><a class="page-number" href="/archives/">1</a><span class="page-number current">2</span><a class="page-number" href="/archives/page/3/">3</a><a class="page-number" href="/archives/page/4/">4</a><span class="space">&hellip;</span><a class="page-number" href="/archives/page/6/">6</a><a class="extend next" rel="next" href="/archives/page/3/">Next &amp;raquo;</a>
-    </nav>
   
 
 
@@ -606,8 +415,8 @@
 	var yiliaConfig = {
 		mathjax: true,
 		isHome: false,
-		isPost: false,
-		isArchive: true,
+		isPost: true,
+		isArchive: false,
 		isTag: false,
 		isCategory: false,
 		open_in_new: false,
