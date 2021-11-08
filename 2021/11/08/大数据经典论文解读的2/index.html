@@ -11,7 +11,7 @@
   <meta name="description" content="切勿浮沙筑高台 参考链接1 参考链接2">
 <meta property="og:type" content="article">
 <meta property="og:title" content="大数据经典论文解读(二)">
-<meta property="og:url" content="http://woaixiaoyuyu.github.io/2021/11/05/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%842/index.html">
+<meta property="og:url" content="http://woaixiaoyuyu.github.io/2021/11/08/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%842/index.html">
 <meta property="og:site_name" content="xiaoyuyulala">
 <meta property="og:description" content="切勿浮沙筑高台 参考链接1 参考链接2">
 <meta property="og:locale">
@@ -19,8 +19,8 @@
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/55/90/55ba476cb8de7fa509568cfa65330390.jpg?wh=2000x1980">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/9b/5e/9b425ff0d1f5f5cb47bf1ae18c86625e.jpg?wh=1920x1080">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/38/98/38abeeba151b9e8473cb972599a9b898.jpg?wh=1920x1080">
-<meta property="article:published_time" content="2021-11-05T06:16:32.000Z">
-<meta property="article:modified_time" content="2021-11-05T06:16:32.474Z">
+<meta property="article:published_time" content="2021-11-08T06:23:32.000Z">
+<meta property="article:modified_time" content="2021-11-08T06:23:53.265Z">
 <meta property="article:author" content="xiaoyuyu">
 <meta property="article:tag" content="Big Data">
 <meta name="twitter:card" content="summary">
@@ -168,8 +168,8 @@
   
 
         
-        <a href="/2021/11/05/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%842/" class="archive-article-date">
-  	<time datetime="2021-11-05T06:16:32.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-11-05</time>
+        <a href="/2021/11/08/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%842/" class="archive-article-date">
+  	<time datetime="2021-11-08T06:23:32.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-11-08</time>
 </a>
         
       </header>
@@ -253,6 +253,24 @@
 <h3 id="宽依赖关系和检查点"><a href="#宽依赖关系和检查点" class="headerlink" title="宽依赖关系和检查点"></a>宽依赖关系和检查点</h3><p>检查点这里就不介绍了，主要就是自己设置一个checkpoint。</p>
 <p>如果一个 RDD 的一个分区，只会影响到下游的一个节点，那么我们就称这样的上下游依赖关系为窄依赖。而如果一个 RDD 的一个分区，会影响到下游的多个节点，那么我们就称这样的上下游关系为宽依赖。</p>
 <p>换句话说，在宽依赖下，一个上游节点的失效，会以几倍的影响在下游得到放大。所以，在宽依赖的场景下，上游会像 MapReduce 里的 Map 一样，把输出结果序列化到硬盘上，以减少故障后的恢复成本。</p>
+<h2 id="Megastore（一）：全国各地都能写入的数据库"><a href="#Megastore（一）：全国各地都能写入的数据库" class="headerlink" title="Megastore（一）：全国各地都能写入的数据库"></a>Megastore（一）：全国各地都能写入的数据库</h2><h3 id="互联网时代的数据库"><a href="#互联网时代的数据库" class="headerlink" title="互联网时代的数据库"></a>互联网时代的数据库</h3><p>在我们前面介绍过的那些论文里，会发现工程师们对于“可用性”问题的考虑，往往是局限在一个数据中心里。GFS 里我们会对数据做三份备份，但是这三份数据还是在同一个数据中心的三台服务器里；针对 Chubby 这样的服务，我们用了五个节点，放到不同的交换机下，但这仍然是在一个数据中心里。可是，如果我们的分布式数据库只能在一个数据中心里，那无论是在“可用性”上，还是在“性能”上，在互联网时代都有点不够看。</p>
+<p>那么，解决这两个问题最好的办法，就是我们有多个数据中心。每个用户的请求都可以访问到就近的本地数据中心，对应的数据也直接就近写入本地数据中心里的数据库，也都从本地数据中心的数据库里读。而各个数据中心的数据库之间，会进行数据复制，确保你在旧金山写入的数据，我在上海一样可以读到。</p>
+<h3 id="复制、分区和数据本地化"><a href="#复制、分区和数据本地化" class="headerlink" title="复制、分区和数据本地化"></a>复制、分区和数据本地化</h3><p>和 Hive 没有重写计算引擎而是直接用了 MapReduce 一样，Megastore 也没有重写数据存储层，而是直接使用了 Bigtable。那么，Megastore 想要解决的第一个问题，就是如何在多个数据中心的 Bigtable 之间复制数据。</p>
+<p>我们常见的数据复制的方案，其实无非就是三种：</p>
+<ul>
+<li>第一种是异步主从复制（Asynchronous Master/Slave），这个我们之前在讲解Chubby的时候就讨论过。异步主从复制有两个核心问题，第一个是如果 Master 节点挂了，Slave 如果还没有及时同步数据的话，我们可能会丢数据。第二个是如果写数据在数据中心 A，读数据在数据中心 B，那么刚写入的数据我们会读不到，也就是无法满足整个系统是“可线性化”的。</li>
+<li>第二种是同步主从复制（Synchronous Master/Slave），这也是大部分系统的解决方案。</li>
+<li>第三种叫做乐观复制（Optimistic Replication），这种方案是 AP（Availability + Partition Tolerance）系统中常常用到的方案。也就是数据可以在任何一个副本中写入，然后这个改动会异步地同步到其他副本中。因为可以在任何一个副本就近写入，所以系统的可用性很好，延时也很低。但是，什么时候会同步完成我们并不知道，所以系统只能是最终一致（eventually-consistent）的。而且，这个系统基本无法实现事务，因为两个并发写入究竟谁先谁后很难判定，所以隔离性就无从谈起了，而“可线性化”自然也就没法做到了。</li>
+</ul>
+<p>Megastore 在这件事情上的选择非常简单明确，那就是直接使用 Paxos 算法来进行多个数据中心内的数据库的同步。要注意，Megastore 并不是像我们之前讲解 Bigtable+Chubby 那样，只是采用 Paxos 来确保只有一个 Master。Megastore 是直接在多个数据中心里，采用 Paxos 同步写入数据，是一个同步复制所有的数据库日志，但是没有主从区分的系统。</p>
+<h3 id="从业务需求到架构设计"><a href="#从业务需求到架构设计" class="headerlink" title="从业务需求到架构设计"></a>从业务需求到架构设计</h3><p>几乎在我下单之前，另一位在海南的朋友也下单了。那么，他下的这张订单是否在我下单之前可以读取到，我却并不在意。一方面，自然我也没有权限看到他的订单，另一方面，在业务上我们也并不需要分辨，几乎在同一时间下单的人谁先谁后。</p>
+<p>根据这个例子我们可以看到，从业务上来说，我们不一定需要全局的“可线性化”，而只要一些业务上有关联的数据之间，能够保障“可线性化”就好了。不仅从“可线性化”的角度是这样的，其实数据库事务隔离性的“可串行化”也是这样的。</p>
+<p>而这个现实业务中，对于数据库事务的“可串行化”，以及分布式系统的“可线性化”不需要是全局的，就给 Megastore 带来了解决问题的思路。Megastore 是这么做的。</p>
+<p>首先，它引入了一个叫做“实体组”（Entity Group）的概念。Megastore 里的数据分区，也是按照实体组进行数据分区的。然后，一个分区的实体组，会在多个数据中心之间通过 Paxos 进行数据同步读写。本质上，Megastore 其实是把一个大数据表，拆分成了很多个独立的小数据表。每一个小数据表，在多个数据中心之间是通过 Paxos 算法进行同步复制的，你可以在任何一个数据中心写入数据。但是各个小数据表之间，并没有“可线性化”和“可串行化”的保障。</p>
+<p>可以理解为同一个实体组内部是需要实现串行，可线性化的。但是，两个实体组之间只需要实现数据库的最终一致性即可。</p>
+<p>Megastore 在每一个实体组内，支持一阶段的数据库事务。但是，如果你有跨实体组的操作需求，你该怎么办呢？你有两个选择，第一个，是使用两阶段事务，当然它的代价非常高昂，是一个阻塞的、有单点的解决方案。而第二个，则是抛弃事务性，转而采用 Megastore 提供的异步消息机制。因为一旦跨实体组，我们就不能保障数据操作是在同一个服务器上进行的了，就需要跨服务器的操作需求。</p>
+<p>两阶段事务相信你已经非常熟悉了，我们来看看这个消息传递机制是怎么样的。当我们需要同时操作两个实体组 A 和 B 的时候，我们可以对第一个实体组，通过一阶段事务完成写入。然后，通过 Megastore 提供的一个队列（queue），向实体组 B 发起一个消息。实体组 B 接收到这个消息之后，可以原子地执行这个消息所做的改动。</p>
+<p>在实际应用层面，我们对于“可串行化”以及“可线性化”的需求并不是全局的，而是可以分区的。</p>
 
       
 	  
@@ -265,7 +283,7 @@
     
     <br>
     <strong>本文链接：</strong>
-    http://woaixiaoyuyu.github.io/2021/11/05/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%842/
+    http://woaixiaoyuyu.github.io/2021/11/08/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%842/
     <br>
     <strong>版权声明：</strong>
     本作品采用
@@ -362,7 +380,7 @@
     <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
     <p>扫一扫，分享到微信</p>
     <div class="wx-qrcode">
-      <img src="//pan.baidu.com/share/qrcode?url=http://woaixiaoyuyu.github.io/2021/11/05/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%842/" alt="微信分享二维码">
+      <img src="//pan.baidu.com/share/qrcode?url=http://woaixiaoyuyu.github.io/2021/11/08/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%842/" alt="微信分享二维码">
     </div>
 </div>
 
@@ -405,7 +423,7 @@
                 </span>
                 <span class="tooltip-content">
                     <div class="toc-article">
-                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Hive%EF%BC%9A%E6%9D%A5%E6%9D%A5%E5%8E%BB%E5%8E%BB%E7%9A%84DSL%EF%BC%8C%E6%B0%B8%E7%94%9F%E4%B8%8D%E6%AD%BB%E7%9A%84SQL"><span class="toc-number">1.</span> <span class="toc-text">Hive：来来去去的DSL，永生不死的SQL</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Hive-%E7%9A%84%E8%AE%BE%E8%AE%A1%E7%9B%AE%E6%A0%87"><span class="toc-number">1.1.</span> <span class="toc-text">Hive 的设计目标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Hive-%E7%9A%84%E6%95%B0%E6%8D%AE%E6%A8%A1%E5%9E%8B"><span class="toc-number">1.2.</span> <span class="toc-text">Hive 的数据模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Hive-%E7%9A%84%E6%95%B0%E6%8D%AE%E5%AD%98%E5%82%A8"><span class="toc-number">1.3.</span> <span class="toc-text">Hive 的数据存储</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Hive-%E7%9A%84%E6%9E%B6%E6%9E%84%E4%B8%8E%E6%80%A7%E8%83%BD"><span class="toc-number">1.4.</span> <span class="toc-text">Hive 的架构与性能</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8EDremel%E5%88%B0Parquet%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9A%E6%B7%B1%E5%85%A5%E5%89%96%E6%9E%90%E5%88%97%E5%BC%8F%E5%AD%98%E5%82%A8"><span class="toc-number">2.</span> <span class="toc-text">从Dremel到Parquet（一）：深入剖析列式存储</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%8E%E8%A1%8C%E5%AD%98%E5%82%A8%E5%88%B0%E5%88%97%E5%AD%98%E5%82%A8"><span class="toc-number">2.1.</span> <span class="toc-text">从行存储到列存储</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E5%B5%8C%E5%A5%97%E7%BB%93%E6%9E%84%E9%97%AE%E9%A2%98"><span class="toc-number">2.2.</span> <span class="toc-text">解决嵌套结构问题</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8EDremel%E5%88%B0Parquet%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9A%E4%BB%96%E5%B1%B1%E4%B9%8B%E7%9F%B3%E7%9A%84MPP%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="toc-number">3.</span> <span class="toc-text">从Dremel到Parquet（二）：他山之石的MPP数据库</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Dremel-%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84"><span class="toc-number">3.1.</span> <span class="toc-text">Dremel 系统架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A1%8C%E5%88%97%E6%B7%B7%E5%90%88%E5%AD%98%E5%82%A8%E7%9A%84-MPP-%E6%9E%B6%E6%9E%84"><span class="toc-number">3.2.</span> <span class="toc-text">行列混合存储的 MPP 架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%91%E5%BD%A2%E5%88%86%E5%8F%91%E7%9A%84%E6%90%9C%E7%B4%A2%E5%BC%95%E6%93%8E%E6%9E%B6%E6%9E%84"><span class="toc-number">3.3.</span> <span class="toc-text">树形分发的搜索引擎架构</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Spark%EF%BC%9A%E5%88%AB%E5%BF%98%E4%BA%86%E5%86%85%E5%AD%98%E6%AF%94%E7%A3%81%E7%9B%98%E5%BF%AB%E5%A4%9A%E5%B0%91"><span class="toc-number">4.</span> <span class="toc-text">Spark：别忘了内存比磁盘快多少</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E7%A1%AC%E7%9B%98%E6%9D%A5%E2%80%9C%E5%AE%B9%E9%94%99%E2%80%9D%E7%9A%84-MapReduce"><span class="toc-number">4.1.</span> <span class="toc-text">使用硬盘来“容错”的 MapReduce</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%80%9C%E5%87%BD%E6%95%B0%E5%BC%8F%E2%80%9D%E7%9A%84-RDD"><span class="toc-number">4.2.</span> <span class="toc-text">“函数式”的 RDD</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%BD%E4%BE%9D%E8%B5%96%E5%85%B3%E7%B3%BB%E5%92%8C%E6%A3%80%E6%9F%A5%E7%82%B9"><span class="toc-number">4.3.</span> <span class="toc-text">宽依赖关系和检查点</span></a></li></ol></li></ol>
+                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Hive%EF%BC%9A%E6%9D%A5%E6%9D%A5%E5%8E%BB%E5%8E%BB%E7%9A%84DSL%EF%BC%8C%E6%B0%B8%E7%94%9F%E4%B8%8D%E6%AD%BB%E7%9A%84SQL"><span class="toc-number">1.</span> <span class="toc-text">Hive：来来去去的DSL，永生不死的SQL</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Hive-%E7%9A%84%E8%AE%BE%E8%AE%A1%E7%9B%AE%E6%A0%87"><span class="toc-number">1.1.</span> <span class="toc-text">Hive 的设计目标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Hive-%E7%9A%84%E6%95%B0%E6%8D%AE%E6%A8%A1%E5%9E%8B"><span class="toc-number">1.2.</span> <span class="toc-text">Hive 的数据模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Hive-%E7%9A%84%E6%95%B0%E6%8D%AE%E5%AD%98%E5%82%A8"><span class="toc-number">1.3.</span> <span class="toc-text">Hive 的数据存储</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Hive-%E7%9A%84%E6%9E%B6%E6%9E%84%E4%B8%8E%E6%80%A7%E8%83%BD"><span class="toc-number">1.4.</span> <span class="toc-text">Hive 的架构与性能</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8EDremel%E5%88%B0Parquet%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9A%E6%B7%B1%E5%85%A5%E5%89%96%E6%9E%90%E5%88%97%E5%BC%8F%E5%AD%98%E5%82%A8"><span class="toc-number">2.</span> <span class="toc-text">从Dremel到Parquet（一）：深入剖析列式存储</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%8E%E8%A1%8C%E5%AD%98%E5%82%A8%E5%88%B0%E5%88%97%E5%AD%98%E5%82%A8"><span class="toc-number">2.1.</span> <span class="toc-text">从行存储到列存储</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E5%B5%8C%E5%A5%97%E7%BB%93%E6%9E%84%E9%97%AE%E9%A2%98"><span class="toc-number">2.2.</span> <span class="toc-text">解决嵌套结构问题</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8EDremel%E5%88%B0Parquet%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9A%E4%BB%96%E5%B1%B1%E4%B9%8B%E7%9F%B3%E7%9A%84MPP%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="toc-number">3.</span> <span class="toc-text">从Dremel到Parquet（二）：他山之石的MPP数据库</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Dremel-%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84"><span class="toc-number">3.1.</span> <span class="toc-text">Dremel 系统架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A1%8C%E5%88%97%E6%B7%B7%E5%90%88%E5%AD%98%E5%82%A8%E7%9A%84-MPP-%E6%9E%B6%E6%9E%84"><span class="toc-number">3.2.</span> <span class="toc-text">行列混合存储的 MPP 架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%91%E5%BD%A2%E5%88%86%E5%8F%91%E7%9A%84%E6%90%9C%E7%B4%A2%E5%BC%95%E6%93%8E%E6%9E%B6%E6%9E%84"><span class="toc-number">3.3.</span> <span class="toc-text">树形分发的搜索引擎架构</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Spark%EF%BC%9A%E5%88%AB%E5%BF%98%E4%BA%86%E5%86%85%E5%AD%98%E6%AF%94%E7%A3%81%E7%9B%98%E5%BF%AB%E5%A4%9A%E5%B0%91"><span class="toc-number">4.</span> <span class="toc-text">Spark：别忘了内存比磁盘快多少</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E7%A1%AC%E7%9B%98%E6%9D%A5%E2%80%9C%E5%AE%B9%E9%94%99%E2%80%9D%E7%9A%84-MapReduce"><span class="toc-number">4.1.</span> <span class="toc-text">使用硬盘来“容错”的 MapReduce</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%80%9C%E5%87%BD%E6%95%B0%E5%BC%8F%E2%80%9D%E7%9A%84-RDD"><span class="toc-number">4.2.</span> <span class="toc-text">“函数式”的 RDD</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%BD%E4%BE%9D%E8%B5%96%E5%85%B3%E7%B3%BB%E5%92%8C%E6%A3%80%E6%9F%A5%E7%82%B9"><span class="toc-number">4.3.</span> <span class="toc-text">宽依赖关系和检查点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Megastore%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9A%E5%85%A8%E5%9B%BD%E5%90%84%E5%9C%B0%E9%83%BD%E8%83%BD%E5%86%99%E5%85%A5%E7%9A%84%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="toc-number">5.</span> <span class="toc-text">Megastore（一）：全国各地都能写入的数据库</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%92%E8%81%94%E7%BD%91%E6%97%B6%E4%BB%A3%E7%9A%84%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="toc-number">5.1.</span> <span class="toc-text">互联网时代的数据库</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%8D%E5%88%B6%E3%80%81%E5%88%86%E5%8C%BA%E5%92%8C%E6%95%B0%E6%8D%AE%E6%9C%AC%E5%9C%B0%E5%8C%96"><span class="toc-number">5.2.</span> <span class="toc-text">复制、分区和数据本地化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%8E%E4%B8%9A%E5%8A%A1%E9%9C%80%E6%B1%82%E5%88%B0%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1"><span class="toc-number">5.3.</span> <span class="toc-text">从业务需求到架构设计</span></a></li></ol></li></ol>
                     </div>
                 </span>
             </div>
