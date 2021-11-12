@@ -43,7 +43,7 @@
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/0b/f1/0b6115afafe3066673f98b7625yy50f1.jpg?wh=2000x1125">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/a0/c3/a0792f039a614cd22dbbf6e715658cc3.jpg?wh=1712x652">
 <meta property="article:published_time" content="2021-10-22T10:16:32.000Z">
-<meta property="article:modified_time" content="2021-10-22T10:17:06.368Z">
+<meta property="article:modified_time" content="2021-11-12T12:08:53.212Z">
 <meta property="article:author" content="xiaoyuyu">
 <meta property="article:tag" content="Big Data">
 <meta name="twitter:card" content="summary">
@@ -587,7 +587,7 @@
 <p>而为了保障线性一致性，或者说系统的可线性化，我们必须让主从节点之间是同步复制的。而要做到高可用的同步复制，我们就需要 Paxos 这样的共识算法。</p>
 <h4 id="并不可行的多协调者"><a href="#并不可行的多协调者" class="headerlink" title="并不可行的多协调者"></a>并不可行的多协调者</h4><p>最容易发生的问题，是操作顺序的错乱。我们以两个协调者 A 和 B，以及两个参与者 C 和 D 为例，如果 A 要在 C 和 D 上，删除目录 /data/bigdata，而 B 则是要在 C 和 D 上，把目录 /data/bigdata 改名成 /data/bigdatapaper。因为是分布式的网络环境，那么可能会出现在 C 这里，A 的请求先到，B 的请求后到，/data/bigdata 的目录已经被删除了，所以改名也失败了；而在 D 这里，两个顺序是反过来的，那么 D 这里的 /data/bigdata 目录已经改名成功，而删除则失败了。C 和 D 之间的数据也就不一致了。</p>
 <h4 id="Paxos-算法中的协调过程"><a href="#Paxos-算法中的协调过程" class="headerlink" title="Paxos 算法中的协调过程"></a>Paxos 算法中的协调过程</h4><p>zookeeper利用的思路原型就是这个。</p>
-<p>我们希望啊，我们在写入数据的时候，能够向一组服务器发起请求，而不是一个服务器。这组服务器里面的任何一个挂掉了，我们都能向里面的另外一台服务器发送请求，并且这组服务器里面的每一台，最终写入并执行日志的顺序是一样的。</p>
+<p>我们希望啊，我们在写入数据的时候，能够<strong>向一组服务器发起请求</strong>，而不是一个服务器。这组服务器里面的任何一个挂掉了，我们都能向里面的另外一台服务器发送请求，并且这组服务器里面的每一台，最终写入并执行日志的顺序是一样的。</p>
 <p>在 Paxos 算法里，我们把每一个要写入的操作，称之为提案（Proposal）。接受外部请求，要尝试写入数据的服务器节点，称之为提案者（Proposer），比如说，我们可以让一组服务器里面有 5 个提案者，可以接受外部的客户端请求。</p>
 <p>在 Paxos 算法里，并不是提案者一旦接受到客户端的请求，就决定了接下来的操作和结果的，而是有一个异步协调的过程，在这个协调过程中，只有获得多数通过（accept）的请求才会被选择（chosen）。这也是为什么，我们通常会选择 3 个或者 5 个节点这样的奇数数字，因为如果是偶数的话，遇到 2:2 打平这样的事情，我们就没法做出判断了。</p>
 <p><strong>给提案编号</strong></p>
@@ -764,7 +764,7 @@
   
 <nav id="article-nav">
   
-    <a href="/2021/11/08/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%842/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2021/11/12/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%842/" id="article-nav-newer" class="article-nav-link-wrap">
       <i class="icon-circle-left"></i>
       <div class="article-nav-title">
         
