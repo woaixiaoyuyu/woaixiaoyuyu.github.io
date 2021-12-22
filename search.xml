@@ -5798,7 +5798,19 @@
 <p>Nimbus 和 Supervisor 之间，并不是直接通信的。因为如果这样的话，显然 Nimbus 会成为一个故障的“单点”。所以 Nimbus 是把对应的任务分配写到 Zookeeper 里，也就是一个类似于 Chubby 这样的分布式锁系统。所以我们的任务分配是持久化的，而且会由 Paxos 协议来保障容错能力。而 Supervisor 也是从 Zookeeper 里面，去读取对应的任务分配。</p>
 <p>Nimbus 和 Supervisor 的职责都非常简单，Nimbus 只需要进行 Topology 的解析和任务调度，而 Supervisor 只需要接收任务，并且监控 Worker 进程是否存活。它们本身不处理数据，而且也不在内存里面保存数据。</p>
 <p><img src="https://static001.geekbang.org/resource/image/88/b6/88f9c89900910c500fa8b60983c287b6.jpg?wh=1920x953"></p>
-<h4 id="Storm-的容错机制"><a href="#Storm-的容错机制" class="headerlink" title="Storm 的容错机制"></a>Storm 的容错机制</h4>]]></content>
+<h4 id="Storm-的容错机制"><a href="#Storm-的容错机制" class="headerlink" title="Storm 的容错机制"></a>Storm 的容错机制</h4><p>相比于通过一个 RPC，消息队列有一个很大的优点，那就是高性能。上游节点不需要等待下游节点返回接收成功，就能发送下一条信息。不过，这也带来了一个问题，就是如果在消息发送之后，下游是否成功接收并处理了这条消息，上游是不知道的。可能因为网络超时、也可能因为下游节点的软硬件故障，在分布式系统里，“错误”是在所难免的。</p>
+<p>而且，在流式数据处理里，我们可能不只有一层链路。就拿论文里的统计 Tweet 里的单词数量为例，我们先要从一个 TweetSpout 里，读取数据流里的 Tweet，随机发送给到一个 ParseTweetBolt，这个 Bolt 会解析 Tweet 成一个个单词，再发送给下游的多个 WordCountBolt。</p>
+<p><img src="https://static001.geekbang.org/resource/image/28/ec/28a45aa97514538624487e288b9634ec.jpg?wh=2000x1480"></p>
+<p>Storm 选择的解决方案，是把从 Spout 发起的第一个 Tuple 作为一棵树的根。下游所有衍生出来发送的 Tuple，都是这棵树的一部分。任何一个 Tuple 处理失败或者超时了，那么就从 Spout 重新发送消息。</p>
+<p>而要做到这一点，Storm 需要在系统里引入一个特殊的 Bolt，叫做 AckerBolt。Spout 发送出去的消息，同时会通知给到 AckerBolt。而 Bolt 一旦处理完根 Tuple 相关的消息，也会通知给到 Acker。</p>
+<p>Bolt 会告诉 AckerBolt 两个信息，一个是我已经处理完了某一个 Tuple，另一个是这个 Tuple 衍生往下游的哪些 Tuple 我也已经发送出去了。这样，Acker 就有了一开始 Spout 发出的 Tuple 的整棵树的完整信息。等到最后一层的 Bolt 处理完对应的 Tuple，然后发送了对应的通知给到 AckerBolt，并且告诉它后面没有新的 Tuple 了，那么 AckerBolt 就知道，整棵 Tuple 树已经处理完成了。</p>
+<p>Storm 采用了一个很巧妙的办法，那就是利用位运算里的异或（XOR）。Storm 给每一个发送出去的 Tuple 都会分配一个 64 位的 message id。当消息从 Spout 被发送出去的时候，Storm 会给 AckerBolt 发送这个 message-id，告诉它，你要开始追踪这个 Tuple 树了。Acker 里呢，则会维护一个 message-id 到校验码（checksum）的映射关系。这个校验码，一开始就是拿 0 和 message-id 去异或（XOR）一下。</p>
+<p>而下游的每一个 Bolt，会处理完这个 Tuple 相关的消息，并且向外发送新的 Tuple。每个新发送的 Tuple 里，都需要带上根 Tuple 的 message-id。在新 Tuple 发送出去之后，Bolt 会通知 AckerBolt，通知的内容也很简单，也是一个根 message-id 到校验码的映射关系。</p>
+<p>这里的校验码，就是把当前对外发送的所有消息的 message-id，和已经处理完的消息的 message-id 做一下异或。然后 AckerBolt 收到这个消息，会把收到的校验码，和本地的校验码也做一下异或，更新成最新的校验码。</p>
+<p>所以，只要有 Tuple 还没有被 acking，我们的校验码就不会是 0，但是一旦所有的 Tuple 树上的 Tuple 都被 acking 了，那么这个校验码必然就是 0。</p>
+<p><img src="https://static001.geekbang.org/resource/image/ce/e5/ceedd4f5df638894d0f03c273ca3e6e5.jpg?wh=2000x1184"></p>
+<p>不过，需要注意的是，这个机制只能保障，Spout 发出来的 Tuple 至少被处理一次，也就是 At Least Once，但是它避免不了 Tuple 可能被重复处理。</p>
+]]></content>
       <tags>
         <tag>Big Data</tag>
       </tags>
