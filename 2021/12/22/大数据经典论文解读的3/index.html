@@ -11,15 +11,17 @@
   <meta name="description" content="切勿浮沙筑高台 参考链接1 参考链接2">
 <meta property="og:type" content="article">
 <meta property="og:title" content="大数据经典论文解读(三)--实时处理">
-<meta property="og:url" content="http://woaixiaoyuyu.github.io/2021/12/21/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%843/index.html">
+<meta property="og:url" content="http://woaixiaoyuyu.github.io/2021/12/22/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%843/index.html">
 <meta property="og:site_name" content="xiaoyuyulala">
 <meta property="og:description" content="切勿浮沙筑高台 参考链接1 参考链接2">
 <meta property="og:locale">
-<meta property="article:published_time" content="2021-12-21T12:50:32.000Z">
-<meta property="article:modified_time" content="2021-12-21T12:51:56.927Z">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/34/5e/3496e210bd86382cbcee58c20f0b095e.png?wh=1056x958">
+<meta property="article:published_time" content="2021-12-22T02:47:32.000Z">
+<meta property="article:modified_time" content="2021-12-22T02:47:51.563Z">
 <meta property="article:author" content="xiaoyuyu">
 <meta property="article:tag" content="Big Data">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://static001.geekbang.org/resource/image/34/5e/3496e210bd86382cbcee58c20f0b095e.png?wh=1056x958">
   
     <link rel="alternative" href="/atom.xml" title="xiaoyuyulala" type="application/atom+xml">
   
@@ -163,8 +165,8 @@
   
 
         
-        <a href="/2021/12/21/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%843/" class="archive-article-date">
-  	<time datetime="2021-12-21T12:50:32.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-12-21</time>
+        <a href="/2021/12/22/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%843/" class="archive-article-date">
+  	<time datetime="2021-12-22T02:47:32.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-12-22</time>
 </a>
         
       </header>
@@ -176,6 +178,40 @@
 <p><a target="_blank" rel="noopener" href="http://duanple.com/?p=170">参考链接2</a></p>
 <span id="more"></span>
 
+<h2 id="从S4到Storm（一）：当分布式遇上实时计算"><a href="#从S4到Storm（一）：当分布式遇上实时计算" class="headerlink" title="从S4到Storm（一）：当分布式遇上实时计算"></a>从S4到Storm（一）：当分布式遇上实时计算</h2><h3 id="实时计算到底有多“实时”？"><a href="#实时计算到底有多“实时”？" class="headerlink" title="实时计算到底有多“实时”？"></a>实时计算到底有多“实时”？</h3><p>一般来说，我们的 MapReduce 都是定时执行的，比如每天运行一次，生成一个报表，或者频繁一点，每小时运行一次，计算上一个小时的点击率数据。但是，这个获得反馈数据的频率还是太慢了。每小时运行一次 MapReduce 程序，意味着我们的统计数据，平均要晚上半个小时。而半个小时里，低质量的广告或者搜索结果已经曝光了很多次了。举个例子，现在无论是什么样的社会热点新闻，很容易在微博热搜上出现。往往在新闻发生后的一两分钟，就已经有大量的搜索出现在微博热搜里了。如果我们要等待半个小时，才能统计到这些搜索，那么热搜功能就可以说形同虚设了。</p>
+<p>采用频繁运行 MapReduce 程序的办法，我们至少会遇到两个问题。</p>
+<p>一个是大量的“额外开销”。我们之前讲过，MapReduce 的额外开销不小，再小的任务也需要个十几秒到一分钟的运行时间。如果我们高频率每分钟运行 MapReduce 任务，那么“额外开销”占的时间比重和硬件资源会非常高，也很浪费。</p>
+<p>二个是我们不得不让输入文件变得极其“碎片化”。无论是 GFS 还是 HDFS，都是把文件变成一个个 64MB 大小的 Block，然后 MapReduce 通过分布式并行读取来进行快速分析。但是如果我们需要每分钟都处理数据，那么对于输入的数据，就要按照分钟进行分割。每分钟我们都需要有很多个文件，分布到 GFS/HDFS 上不同的数据节点。这样，我们的文件都会变得很小，也就丧失了顺序读取大文件的性能优势。</p>
+<p>其实，高频率地执行 MapReduce 还会有很多问题。而归根到底，是这两点：</p>
+<ul>
+<li>第一，MapReduce 是为“高吞吐量”而设计的一个系统。在整个系统设计理念里，它没有考虑“低延时”这个需求。</li>
+<li>第二，MapReduce 的数据，是一份“边界明确（bounded）”的数据。在进行数据处理之前，要处理的数据已经存放在存储系统上了。而我们想要进行的实时数据统计，想要处理的是一份“无边界（unbounded）”的数据，会不断地有新数据流入进来，永无停歇。</li>
+</ul>
+<h3 id="流式计算的逻辑模型"><a href="#流式计算的逻辑模型" class="headerlink" title="流式计算的逻辑模型"></a>流式计算的逻辑模型</h3><p>我们先来看一看 S4，是怎么抽象我们的流式计算的。S4 把所有的计算过程，都变成了一个个处理元素（Processing Element）对象，简称为 PE 对象。我这里特地加上了对象，就是因为在实现上，PE 就是一个面向对象编程里面一个实际的对象。</p>
+<p>每一个 PE 对象，都有四部分要素组成，分别是：</p>
+<ul>
+<li>PE 本身的功能（functionality），这个体现为 PE 类里实现的业务逻辑函数，以及为了这个类配置的各种参数；</li>
+<li>PE 能够处理的事件类型（types of events）；</li>
+<li>PE 能够处理的事件的键（keyed attribute）；</li>
+<li>PE 处理的事件的键对应的值（value）。</li>
+</ul>
+<p>对于流式的数据处理，就是由一个个 PE 组成的有向无环图（DAG）。有向无环图的起点，是一些特殊的被称为无键 PE（Keyless PE）的对象。这些对象的作用，其实就是接收外部发送来的事件流，这些外部发送过来的事件流，其实就是一条条的消息。</p>
+<p>这些无键 PE 会解析对应的消息，变成一个个事件。然后给每个事件打上三个信息，分别是：</p>
+<ul>
+<li>事件类型（Event Type）；</li>
+<li>事件的 Key；</li>
+<li>事件的 Value。</li>
+</ul>
+<p>然后可以把事件给发送出去。接着下游的其他 PE 对象，会根据自己定义的事件类型，和能处理的键来接收对应的消息，并且处理这个消息。如果当前系统里，没有对应的键的 PE，那么系统会创建一个新的 PE 对象。</p>
+<p>处理数据的 PE 对象，可以选择处理完之后立刻发送一个新的事件出去；也可以选择在对象内部来维护一个状态，然后当处理了一定数量的消息之后，或者过了一个固定的事件间隔之后把消息发送出去。</p>
+<p>最后，在整个有向无环图的终点，会有一系列的 PE 对象。这些对象，会把最终的计算结果发布（Publish）。这个发布的频率，也和其他 PE 发送消息的逻辑类似，可以在每收到一个事件就发送，也可以要求接收到一定数量的事件，或者每隔一个特定的时间间隔发送。</p>
+<p><img src="https://static001.geekbang.org/resource/image/34/5e/3496e210bd86382cbcee58c20f0b095e.png?wh=1056x958"></p>
+<h3 id="师从-MapReduce-的设计理念"><a href="#师从-MapReduce-的设计理念" class="headerlink" title="师从 MapReduce 的设计理念"></a>师从 MapReduce 的设计理念</h3><p>其实 S4 的系统架构，和我们之前看过的 MapReduce 这样的框架一脉相承。PE 其实和 Map/Reduce 函数一样，只是一个抽象的概念。不过 S4 的系统设计，要更加激进一点，那就是 S4 选择了一个无中心的，完全对称的架构。</p>
+<p>S4 和我们之前看过的所有系统都不一样，没有所谓的 Master 节点。如果一定要说有一个中心化的地方的话，S4 依赖于 Zookeeper，也就是一个类似于 Chubby 这样的分布式锁系统。S4 的所有服务器，都会作为一个处理节点（ProcessingNode），简称 PN 注册在 Zookeeper 上。具体如何分配负载，是由各个节点协商决定的，而不是由一个中心化的 Master 统一分配。</p>
+<h3 id="稍显“过时”的伸缩和容错能力"><a href="#稍显“过时”的伸缩和容错能力" class="headerlink" title="稍显“过时”的伸缩和容错能力"></a>稍显“过时”的伸缩和容错能力</h3><p>首先就是这里的海量对象的问题。由于每一个处理数据的 Key 都要是一个对象，系统里就会有海量的对象。而一个 Key 如果只出现一次，之后再也不出现了，也要占用内存。S4 对此的解决办法，是给 Key 设定 TTL，定期清理掉不需要的 Key。</p>
+<p>其次，是 S4 里，没有时间窗口的概念。在我们进行实时数据处理的时候，我们需要统计的，常常是“过去一分钟的热搜”，或者“过去一小时的热搜”，这样有一个时间范围的数据。</p>
+<p>第三，是 S4 的容错处理非常简单。S4 能够做到的容错，其实就是某一个计算节点挂掉了，我们重新再起一个计算节点承担它的工作。但是，原先节点里，所有 PE 维护的状态信息就都丢失了。我们既不知道目前的统计信息是什么，也不知道目前处理到哪些事件了。</p>
+<p>最后一个问题，则是 S4 虽然是一个分布式系统，但是并不支持真正的动态扩容。在一开始论文的假设部分，就假设了运行中的集群不会增加或者减少节点。</p>
 
       
 	  
@@ -188,7 +224,7 @@
     
     <br>
     <strong>本文链接：</strong>
-    http://woaixiaoyuyu.github.io/2021/12/21/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%843/
+    http://woaixiaoyuyu.github.io/2021/12/22/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%843/
     <br>
     <strong>版权声明：</strong>
     本作品采用
@@ -285,7 +321,7 @@
     <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
     <p>扫一扫，分享到微信</p>
     <div class="wx-qrcode">
-      <img src="//pan.baidu.com/share/qrcode?url=http://woaixiaoyuyu.github.io/2021/12/21/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%843/" alt="微信分享二维码">
+      <img src="//pan.baidu.com/share/qrcode?url=http://woaixiaoyuyu.github.io/2021/12/22/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%843/" alt="微信分享二维码">
     </div>
 </div>
 
@@ -299,18 +335,9 @@
   
 <nav id="article-nav">
   
-    <a href="/2021/12/21/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%842/" id="article-nav-newer" class="article-nav-link-wrap">
-      <i class="icon-circle-left"></i>
-      <div class="article-nav-title">
-        
-          大数据经典论文解读(二)
-        
-      </div>
-    </a>
   
-  
-    <a href="/2021/10/22/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title">大数据经典论文解读(一)</div>
+    <a href="/2021/12/21/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%842/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">大数据经典论文解读(二)</div>
       <i class="icon-circle-right"></i>
     </a>
   
@@ -337,7 +364,7 @@
                 </span>
                 <span class="tooltip-content">
                     <div class="toc-article">
-                    目录，不存在的…
+                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8ES4%E5%88%B0Storm%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9A%E5%BD%93%E5%88%86%E5%B8%83%E5%BC%8F%E9%81%87%E4%B8%8A%E5%AE%9E%E6%97%B6%E8%AE%A1%E7%AE%97"><span class="toc-number">1.</span> <span class="toc-text">从S4到Storm（一）：当分布式遇上实时计算</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E6%97%B6%E8%AE%A1%E7%AE%97%E5%88%B0%E5%BA%95%E6%9C%89%E5%A4%9A%E2%80%9C%E5%AE%9E%E6%97%B6%E2%80%9D%EF%BC%9F"><span class="toc-number">1.1.</span> <span class="toc-text">实时计算到底有多“实时”？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%81%E5%BC%8F%E8%AE%A1%E7%AE%97%E7%9A%84%E9%80%BB%E8%BE%91%E6%A8%A1%E5%9E%8B"><span class="toc-number">1.2.</span> <span class="toc-text">流式计算的逻辑模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%88%E4%BB%8E-MapReduce-%E7%9A%84%E8%AE%BE%E8%AE%A1%E7%90%86%E5%BF%B5"><span class="toc-number">1.3.</span> <span class="toc-text">师从 MapReduce 的设计理念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A8%8D%E6%98%BE%E2%80%9C%E8%BF%87%E6%97%B6%E2%80%9D%E7%9A%84%E4%BC%B8%E7%BC%A9%E5%92%8C%E5%AE%B9%E9%94%99%E8%83%BD%E5%8A%9B"><span class="toc-number">1.4.</span> <span class="toc-text">稍显“过时”的伸缩和容错能力</span></a></li></ol></li></ol>
                     </div>
                 </span>
             </div>
