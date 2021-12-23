@@ -11,7 +11,7 @@
   <meta name="description" content="切勿浮沙筑高台 参考链接1 参考链接2">
 <meta property="og:type" content="article">
 <meta property="og:title" content="大数据经典论文解读(三)--实时处理">
-<meta property="og:url" content="http://woaixiaoyuyu.github.io/2021/12/22/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%843/index.html">
+<meta property="og:url" content="http://woaixiaoyuyu.github.io/2021/12/23/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%843/index.html">
 <meta property="og:site_name" content="xiaoyuyulala">
 <meta property="og:description" content="切勿浮沙筑高台 参考链接1 参考链接2">
 <meta property="og:locale">
@@ -21,8 +21,11 @@
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/88/b6/88f9c89900910c500fa8b60983c287b6.jpg?wh=1920x953">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/28/ec/28a45aa97514538624487e288b9634ec.jpg?wh=2000x1480">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/ce/e5/ceedd4f5df638894d0f03c273ca3e6e5.jpg?wh=2000x1184">
-<meta property="article:published_time" content="2021-12-22T10:38:32.000Z">
-<meta property="article:modified_time" content="2021-12-22T10:38:52.469Z">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/9c/0b/9caa25640b75ed78677385d04546a10b.png?wh=591x451">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/91/5f/9197b49a0ef0c0b892c7bd78e9ba455f.jpg?wh=1920x1480">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/e4/27/e4744d9c75ebd7a8f4e0a8ea0ef93b27.png?wh=901x641">
+<meta property="article:published_time" content="2021-12-23T06:38:32.000Z">
+<meta property="article:modified_time" content="2021-12-23T06:38:11.796Z">
 <meta property="article:author" content="xiaoyuyu">
 <meta property="article:tag" content="Big Data">
 <meta name="twitter:card" content="summary">
@@ -170,8 +173,8 @@
   
 
         
-        <a href="/2021/12/22/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%843/" class="archive-article-date">
-  	<time datetime="2021-12-22T10:38:32.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-12-22</time>
+        <a href="/2021/12/23/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%843/" class="archive-article-date">
+  	<time datetime="2021-12-23T06:38:32.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-12-23</time>
 </a>
         
       </header>
@@ -255,7 +258,32 @@
 <p>所以，只要有 Tuple 还没有被 acking，我们的校验码就不会是 0，但是一旦所有的 Tuple 树上的 Tuple 都被 acking 了，那么这个校验码必然就是 0。</p>
 <p><img src="https://static001.geekbang.org/resource/image/ce/e5/ceedd4f5df638894d0f03c273ca3e6e5.jpg?wh=2000x1184"></p>
 <p>不过，需要注意的是，这个机制只能保障，Spout 发出来的 Tuple 至少被处理一次，也就是 At Least Once，但是它避免不了 Tuple 可能被重复处理。</p>
-
+<h2 id="Kafka（一）：消息队列的新标准"><a href="#Kafka（一）：消息队列的新标准" class="headerlink" title="Kafka（一）：消息队列的新标准"></a>Kafka（一）：消息队列的新标准</h2><h3 id="Kafka-的系统架构"><a href="#Kafka-的系统架构" class="headerlink" title="Kafka 的系统架构"></a>Kafka 的系统架构</h3><p>首先，我们仍然可以把 Kafka 看成是一个类似于 Scribe 这样的日志收集器。上游的应用服务器仍然会把日志发送给 Kafka 集群，但是在 Kafka 的下游，它不仅能把对应的数据，作为文件上传到 HDFS 上。同时，像 Storm 这样的流式数据处理系统，它的 Spout 会直接从 Kafka 里获取数据，而不是从 HDFS 上去读文件。这个时候，Kafka 其实变成了一个分布式的消息队列。</p>
+<p>Kafka 的整个系统架构和概念并不复杂，和你日常见过的消息队列一样，它是一个典型的生产者（Producer）- 消费者（Consumer）模型。在 Kafka 里，有这样几个角色。</p>
+<p>首先是 Producer，也就是日志的生产者，通常它就是我们前面的应用服务器。应用服务器会生成日志，作为生产者，把日志发送给到 Kafka 系统中去。</p>
+<p>然后是 Broker，也就是我们实际 Kafka 的服务进程。因为为了容错和高可用，Kafka 是一个分布式的集群，所以会有很多台物理服务器，每台服务器上都会有对应的 Broker 的进程。Kafka 会对所有的消息，进行两种类型的分组。</p>
+<ul>
+<li>第一种，是根据业务情况进行分组，在 Kafka 里，对应的就是 Topic（主题）这个概念。比如我们可能既有广告日志，又有搜索日志，两种日志的格式和用途都不一样，那么我们就会通过 Topic 区分开来。</li>
+<li>第二种，是进行数据分区，这个和我们见过的其他分布式系统进行分区的原因是一样的。一方面，分区可以帮助我们水平扩展系统的处理能力；同一个 Topic 的日志，可以平均分配到多台物理服务器上，确保系统可以并行处理。另一方面，这也是一个有效的“容错”机制，一旦有某一个 Broker 所在的物理服务器出现了硬件故障，那么上游的 Producer，可以把日志发到其他的 Broker 上，来确保系统仍然可以正常运作。</li>
+</ul>
+<p><img src="https://static001.geekbang.org/resource/image/9c/0b/9caa25640b75ed78677385d04546a10b.png?wh=591x451"></p>
+<p>最后是 Consumer，也就是实际去处理日志的消费者。我们去读取 Kafka 数据，把它放到 HDFS 上的程序，就是一个消费者。而我们去获取实时日志，进行分析的程序，也同样是一个消费者，比如一个已经提交运行的 Storm Topology。Kafka 对于它所处理的消息，是支持多个 Consumer 的</p>
+<p>为了区分这两种“多个消费者”代表的不同含义，Kafka 把每一个用途的 Consumer 程序，称之为一个 Consumer Group。也就是说，Kafka 里，会有很多个不同的 Consumer Group，它们会根据自己的用途去消费相同的消息。而一个 Consumer Group 里，会有很多个 Consumer，不同 Consumer 之间分摊压力，会去消费不同的消息。</p>
+<p><img src="https://static001.geekbang.org/resource/image/91/5f/9197b49a0ef0c0b892c7bd78e9ba455f.jpg?wh=1920x1480"></p>
+<h3 id="拉数据而不是推数据"><a href="#拉数据而不是推数据" class="headerlink" title="拉数据而不是推数据"></a>拉数据而不是推数据</h3><p>但是，这个主动推送数据到下游的方案，其实有一个很严重的缺陷，那就是消息队列本身，需要维护下游是否已经成功处理消息这个状态。</p>
+<p>事实上，不只是 Scribe 这样的日志收集器会遇到这个问题，传统的消息队列也会有类似的情况。传统的消息队列，通常会通过一个 message-id 来唯一标识一条消息，只有当下游的所有订阅了这个消息的消费者，处理完成之后，消息队列就认为这条消息被处理完成了，可以从当前的消息队列里面删除掉了。但是，这个机制也就意味着，这个消息队列在下游数据分析完成之前，需要一直存储着这些消息，等待下游的响应，会消耗大量的资源。</p>
+<p>而 Kafka 则采用了一个完全不同的方式来设计整个系统，简单来说，就是两点：</p>
+<ul>
+<li>第一点，是让所有的 Consumer 来“拉取”数据，而不是主动“推送”数据给到 Consumer。并且，Consumer 到底消费完了哪些数据，是由 Consumer 自己维护的，而不是由 Kafka 这个消息队列来进行维护。</li>
+<li>第二点，是采用了一个非常简单的追加文件写的方式来直接作为我们的消息队列。在 Kafka 里，每一条消息并没有通过一个唯一的 message-id，来标识或者维护。整个消息队列也没有维护什么复杂的内存里的数据结构。下游的消费者，只需要维护一个此时它处理到的日志，在这个日志文件中的偏移量（offset）就好了。</li>
+</ul>
+<p>然后，基于这两个设计思路，Kafka 做了一些简单的限制，那就是一个 consumer 总是顺序地去消费，来自一个特定分区（Partition）的消息。而一个 Partition 则是 Kafka 里面可以并行处理的最小单位，这就是说，一个 Partition 的数据，只会被一个 consumer 处理。</p>
+<p>这样一来，整个 Kafka 的系统设计也一下子变得特别简单。所有的 Producer 生成消息，和 Consumer 消费消息，都变成了简单的顺序的文件读和文件写。而我们知道，硬盘的顺序读写的性能要远高于随机读写。</p>
+<h3 id="Kafka-的单个-Partition-的读写实现"><a href="#Kafka-的单个-Partition-的读写实现" class="headerlink" title="Kafka 的单个 Partition 的读写实现"></a>Kafka 的单个 Partition 的读写实现</h3><p>在实际的实现上，Kafka 是这么做的。每一个 Topic 会有很多个 Partition，分布到不同的物理机器上。一个物理机上，可能会分配到多个 Partition。实际存储的时候，我们的一个 Partition 是一个逻辑上的日志文件。在物理上，这个日志文件会给实现成一组大小基本相同的 Segment 文件，比如每个 Segment 是 1GB 大小。每当有新消息从 Producer 发过来的时候，Broker 就会把消息追加写入到最后那个 Segment 文件里。</p>
+<p>而为了性能考虑，Kafka 支持我们自己设置，是每次写入到把数据刷新到硬盘里，还是在写入了一定数量的日志或者经过一个固定的时间的时候，才把文件刷新到硬盘里。</p>
+<p>Broker 会在内存里维护一个简单的索引，这个索引其实就是每个通过一个虚拟的偏移量，指向一个具体的 Segment 文件。那么在 Consumer 要消费数据的时候，就是根据 Consumer 本地维护的已经处理完的偏移量，在索引里找到实际的 Segment 文件，然后去读取数据就好了。</p>
+<p><img src="https://static001.geekbang.org/resource/image/e4/27/e4744d9c75ebd7a8f4e0a8ea0ef93b27.png?wh=901x641"></p>
+<h2 id="Kafka（二）：从Lambda到Kappa，流批一体计算的起源"><a href="#Kafka（二）：从Lambda到Kappa，流批一体计算的起源" class="headerlink" title="Kafka（二）：从Lambda到Kappa，流批一体计算的起源"></a>Kafka（二）：从Lambda到Kappa，流批一体计算的起源</h2>
       
 	  
 
@@ -267,7 +295,7 @@
     
     <br>
     <strong>本文链接：</strong>
-    http://woaixiaoyuyu.github.io/2021/12/22/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%843/
+    http://woaixiaoyuyu.github.io/2021/12/23/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%843/
     <br>
     <strong>版权声明：</strong>
     本作品采用
@@ -364,7 +392,7 @@
     <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
     <p>扫一扫，分享到微信</p>
     <div class="wx-qrcode">
-      <img src="//pan.baidu.com/share/qrcode?url=http://woaixiaoyuyu.github.io/2021/12/22/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%843/" alt="微信分享二维码">
+      <img src="//pan.baidu.com/share/qrcode?url=http://woaixiaoyuyu.github.io/2021/12/23/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%843/" alt="微信分享二维码">
     </div>
 </div>
 
@@ -407,7 +435,7 @@
                 </span>
                 <span class="tooltip-content">
                     <div class="toc-article">
-                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8ES4%E5%88%B0Storm%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9A%E5%BD%93%E5%88%86%E5%B8%83%E5%BC%8F%E9%81%87%E4%B8%8A%E5%AE%9E%E6%97%B6%E8%AE%A1%E7%AE%97"><span class="toc-number">1.</span> <span class="toc-text">从S4到Storm（一）：当分布式遇上实时计算</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E6%97%B6%E8%AE%A1%E7%AE%97%E5%88%B0%E5%BA%95%E6%9C%89%E5%A4%9A%E2%80%9C%E5%AE%9E%E6%97%B6%E2%80%9D%EF%BC%9F"><span class="toc-number">1.1.</span> <span class="toc-text">实时计算到底有多“实时”？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%81%E5%BC%8F%E8%AE%A1%E7%AE%97%E7%9A%84%E9%80%BB%E8%BE%91%E6%A8%A1%E5%9E%8B"><span class="toc-number">1.2.</span> <span class="toc-text">流式计算的逻辑模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%88%E4%BB%8E-MapReduce-%E7%9A%84%E8%AE%BE%E8%AE%A1%E7%90%86%E5%BF%B5"><span class="toc-number">1.3.</span> <span class="toc-text">师从 MapReduce 的设计理念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A8%8D%E6%98%BE%E2%80%9C%E8%BF%87%E6%97%B6%E2%80%9D%E7%9A%84%E4%BC%B8%E7%BC%A9%E5%92%8C%E5%AE%B9%E9%94%99%E8%83%BD%E5%8A%9B"><span class="toc-number">1.4.</span> <span class="toc-text">稍显“过时”的伸缩和容错能力</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8ES4%E5%88%B0Storm%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9A%E4%BD%8D%E8%BF%90%E7%AE%97%E6%98%AF%E4%B8%AA%E5%A5%BD%E4%B8%9C%E8%A5%BF"><span class="toc-number">2.</span> <span class="toc-text">从S4到Storm（二）：位运算是个好东西</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B8%E5%9E%8B%E7%9A%84-Master-Worker-%E6%9E%B6%E6%9E%84"><span class="toc-number">2.1.</span> <span class="toc-text">典型的 Master+Worker 架构</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8E-Topology-%E7%9A%84%E9%80%BB%E8%BE%91%E6%A8%A1%E5%9E%8B"><span class="toc-number">2.1.1.</span> <span class="toc-text">基于 Topology 的逻辑模型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Master-Worker-%E7%9A%84%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84"><span class="toc-number">2.1.2.</span> <span class="toc-text">Master+Worker 的系统架构</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Storm-%E7%9A%84%E5%AE%B9%E9%94%99%E6%9C%BA%E5%88%B6"><span class="toc-number">2.1.3.</span> <span class="toc-text">Storm 的容错机制</span></a></li></ol></li></ol></li></ol>
+                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8ES4%E5%88%B0Storm%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9A%E5%BD%93%E5%88%86%E5%B8%83%E5%BC%8F%E9%81%87%E4%B8%8A%E5%AE%9E%E6%97%B6%E8%AE%A1%E7%AE%97"><span class="toc-number">1.</span> <span class="toc-text">从S4到Storm（一）：当分布式遇上实时计算</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E6%97%B6%E8%AE%A1%E7%AE%97%E5%88%B0%E5%BA%95%E6%9C%89%E5%A4%9A%E2%80%9C%E5%AE%9E%E6%97%B6%E2%80%9D%EF%BC%9F"><span class="toc-number">1.1.</span> <span class="toc-text">实时计算到底有多“实时”？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%81%E5%BC%8F%E8%AE%A1%E7%AE%97%E7%9A%84%E9%80%BB%E8%BE%91%E6%A8%A1%E5%9E%8B"><span class="toc-number">1.2.</span> <span class="toc-text">流式计算的逻辑模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%88%E4%BB%8E-MapReduce-%E7%9A%84%E8%AE%BE%E8%AE%A1%E7%90%86%E5%BF%B5"><span class="toc-number">1.3.</span> <span class="toc-text">师从 MapReduce 的设计理念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A8%8D%E6%98%BE%E2%80%9C%E8%BF%87%E6%97%B6%E2%80%9D%E7%9A%84%E4%BC%B8%E7%BC%A9%E5%92%8C%E5%AE%B9%E9%94%99%E8%83%BD%E5%8A%9B"><span class="toc-number">1.4.</span> <span class="toc-text">稍显“过时”的伸缩和容错能力</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%8ES4%E5%88%B0Storm%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9A%E4%BD%8D%E8%BF%90%E7%AE%97%E6%98%AF%E4%B8%AA%E5%A5%BD%E4%B8%9C%E8%A5%BF"><span class="toc-number">2.</span> <span class="toc-text">从S4到Storm（二）：位运算是个好东西</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B8%E5%9E%8B%E7%9A%84-Master-Worker-%E6%9E%B6%E6%9E%84"><span class="toc-number">2.1.</span> <span class="toc-text">典型的 Master+Worker 架构</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9F%BA%E4%BA%8E-Topology-%E7%9A%84%E9%80%BB%E8%BE%91%E6%A8%A1%E5%9E%8B"><span class="toc-number">2.1.1.</span> <span class="toc-text">基于 Topology 的逻辑模型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Master-Worker-%E7%9A%84%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84"><span class="toc-number">2.1.2.</span> <span class="toc-text">Master+Worker 的系统架构</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Storm-%E7%9A%84%E5%AE%B9%E9%94%99%E6%9C%BA%E5%88%B6"><span class="toc-number">2.1.3.</span> <span class="toc-text">Storm 的容错机制</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Kafka%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9A%E6%B6%88%E6%81%AF%E9%98%9F%E5%88%97%E7%9A%84%E6%96%B0%E6%A0%87%E5%87%86"><span class="toc-number">3.</span> <span class="toc-text">Kafka（一）：消息队列的新标准</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Kafka-%E7%9A%84%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84"><span class="toc-number">3.1.</span> <span class="toc-text">Kafka 的系统架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8B%89%E6%95%B0%E6%8D%AE%E8%80%8C%E4%B8%8D%E6%98%AF%E6%8E%A8%E6%95%B0%E6%8D%AE"><span class="toc-number">3.2.</span> <span class="toc-text">拉数据而不是推数据</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Kafka-%E7%9A%84%E5%8D%95%E4%B8%AA-Partition-%E7%9A%84%E8%AF%BB%E5%86%99%E5%AE%9E%E7%8E%B0"><span class="toc-number">3.3.</span> <span class="toc-text">Kafka 的单个 Partition 的读写实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Kafka%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9A%E4%BB%8ELambda%E5%88%B0Kappa%EF%BC%8C%E6%B5%81%E6%89%B9%E4%B8%80%E4%BD%93%E8%AE%A1%E7%AE%97%E7%9A%84%E8%B5%B7%E6%BA%90"><span class="toc-number">4.</span> <span class="toc-text">Kafka（二）：从Lambda到Kappa，流批一体计算的起源</span></a></li></ol>
                     </div>
                 </span>
             </div>
