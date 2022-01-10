@@ -11,14 +11,15 @@
   <meta name="description" content="切勿浮沙筑高台 参考链接1 参考链接2">
 <meta property="og:type" content="article">
 <meta property="og:title" content="大数据经典论文解读(四)">
-<meta property="og:url" content="http://woaixiaoyuyu.github.io/2021/01/07/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%844/index.html">
+<meta property="og:url" content="http://woaixiaoyuyu.github.io/2021/01/10/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%844/index.html">
 <meta property="og:site_name" content="xiaoyuyulala">
 <meta property="og:description" content="切勿浮沙筑高台 参考链接1 参考链接2">
 <meta property="og:locale">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/25/55/25bfb6283e0e26cf621ed5f00a5c4855.jpg?wh=1920x1480">
 <meta property="og:image" content="https://static001.geekbang.org/resource/image/0a/98/0a7891439a757e6ede6d00583e78dd98.jpg?wh=2000x1542">
-<meta property="article:published_time" content="2021-01-07T04:35:32.000Z">
-<meta property="article:modified_time" content="2022-01-07T04:36:02.975Z">
+<meta property="og:image" content="https://static001.geekbang.org/resource/image/d9/1b/d96da975b92bbd0f02e23cbac86f351b.jpg?wh=1920x887">
+<meta property="article:published_time" content="2021-01-10T10:18:32.000Z">
+<meta property="article:modified_time" content="2022-01-10T10:18:34.037Z">
 <meta property="article:author" content="xiaoyuyu">
 <meta property="article:tag" content="Big Data">
 <meta name="twitter:card" content="summary">
@@ -166,8 +167,8 @@
   
 
         
-        <a href="/2021/01/07/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%844/" class="archive-article-date">
-  	<time datetime="2021-01-07T04:35:32.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-01-07</time>
+        <a href="/2021/01/10/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%844/" class="archive-article-date">
+  	<time datetime="2021-01-10T10:18:32.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-01-10</time>
 </a>
         
       </header>
@@ -287,6 +288,21 @@
 <p>Slave 服务器，就是我们实际负责去运行 Task 的服务器。每个 Slave 服务器上，都会有一个叫做 Borglet 的进程。Master 并不会直接和每个 Slave 服务器上的 Task 进程通信，而只是和 Borglet 进程通信。</p>
 <p>Borg 会把所有的 Slave 机器分片，然后让每一个 master 的副本，都负责一部分 Borglet 的通信。然后，这个副本会把 Borglet 上报的最新信息，和 Master 已经知道信息的差（Diff），交给 Master 里的 master，以减少这一台特定机器的负载。</p>
 <p><img src="https://static001.geekbang.org/resource/image/0a/98/0a7891439a757e6ede6d00583e78dd98.jpg?wh=2000x1542"></p>
+<h2 id="Borg（二）：互不“信任”的调度系统"><a href="#Borg（二）：互不“信任”的调度系统" class="headerlink" title="Borg（二）：互不“信任”的调度系统"></a>Borg（二）：互不“信任”的调度系统</h2><p>虽然 Borg 的 Master 集群，仍然是一个会选举出 master 的 Paxos 实现。但是除了 master 之外的其他副本，也需要去承担和 Borglet 通信的职责，而不仅仅是一个同步数据的副本。</p>
+<h3 id="“贪心”的开发者和-Borg"><a href="#“贪心”的开发者和-Borg" class="headerlink" title="“贪心”的开发者和 Borg"></a>“贪心”的开发者和 Borg</h3><p>每一个使用 Borg 的开发者，在向 Borg 提交任务的时候，都需要申明任务需要使用的资源。那么，作为开发者你会怎么做呢？要是我，那肯定是尽量多申请点资源给自己留一点余量。</p>
+<p>所以，面对贪心的都会多给自己申请一点资源的开发者，Borg 是通过这样两个方式，来提升机器的使用率。</p>
+<ul>
+<li><p>第一个办法，是对资源进行“超卖”。</p>
+<p>也就是我明明只有 64GB 的内存，但是我允许同时有申明了 80GB 的任务在 Borg 里运行。当然，为了保障所有生产类型的任务一定能够正常运行，Borg 并不会对它们进行超卖。但是，对于非生产类型的任务，比如离线的数据批处理任务，超卖是没有问题的。大不了，其中有些任务在资源不足的时候，会被挂起，或者调度到其他机器上重新运行，任务完成的时间需要久一点而已。</p>
+</li>
+<li><p>第二个办法，则是对资源进行动态的“回收”。</p>
+<p>Borg 会在 Task 开始的时候，先为它分配它所申请的所有资源。然后，在 Task 成功启动 5 分钟之后，它会慢慢减少给 Task 分配的资源，直到最后变成 Task 当前实际使用的资源，以及 Borg 预留的一些 Buffer。当然，Task 使用的资源可能是动态变化的。比如一个服务是用来处理图片的，平时都是处理的小图片，内存使用很小，忽然来了一张大图片，那么它使用的内存一下子需要大增。这个时候，Borg 会迅速把 Task 分配的资源，增加到它所申请的资源数量。</p>
+</li>
+</ul>
+<p>我们把开发者申请的资源被称之为限制资源（Resource Limit），而实际 Borg 动态分配给它的则是保留资源（Resource Reservation），这两者的差值就是我们的回收资源（Resource Reclamation）。这部分回收资源，就是我们可以再利用起来的了。</p>
+<h3 id="平均分配还是多留点闲人"><a href="#平均分配还是多留点闲人" class="headerlink" title="平均分配还是多留点闲人"></a>平均分配还是多留点闲人</h3><p>首先，Borg 里的调度器和 Master 是分离的。调度器是异步从 Master 写入的队列里，去扫描有哪些 Task，然后再进行分配的。这个扫描过程中，调度器会先调度高优先级的，再调度低优先级的。而为了保障公平，在同一个优先级里，Borg 会采用轮询的方式。</p>
+<p>然后，调度的过程分成两步。第一步，我们当然要先保障这个 Task 能正常运行，所以只能寻找哪些服务器能够满足被调度的 Task 的资源需求。这个，被称之为可行性检查（feasible checking）。然后是第二步，Borg 会对这个 Task 分配到每一台机器上，去打个分，根据打分高低来选择一台服务器。而当资源不足的时候，高优先级的 Task 会抢占掉已经在运行的，低优先级的 Task。</p>
+<p><img src="https://static001.geekbang.org/resource/image/d9/1b/d96da975b92bbd0f02e23cbac86f351b.jpg?wh=1920x887"></p>
 
       
 	  
@@ -299,7 +315,7 @@
     
     <br>
     <strong>本文链接：</strong>
-    http://woaixiaoyuyu.github.io/2021/01/07/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%844/
+    http://woaixiaoyuyu.github.io/2021/01/10/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%844/
     <br>
     <strong>版权声明：</strong>
     本作品采用
@@ -396,7 +412,7 @@
     <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
     <p>扫一扫，分享到微信</p>
     <div class="wx-qrcode">
-      <img src="//pan.baidu.com/share/qrcode?url=http://woaixiaoyuyu.github.io/2021/01/07/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%844/" alt="微信分享二维码">
+      <img src="//pan.baidu.com/share/qrcode?url=http://woaixiaoyuyu.github.io/2021/01/10/%E5%A4%A7%E6%95%B0%E6%8D%AE%E7%BB%8F%E5%85%B8%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB%E7%9A%844/" alt="微信分享二维码">
     </div>
 </div>
 
@@ -448,7 +464,7 @@
                 </span>
                 <span class="tooltip-content">
                     <div class="toc-article">
-                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Raft%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9A%E4%B8%8D%E4%BC%9A%E8%83%8C%E5%8F%9B%E7%9A%84%E4%BF%A1%E4%BD%BF"><span class="toc-number">1.</span> <span class="toc-text">Raft（一）：不会背叛的信使</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E5%85%B1%E8%AF%86%E9%97%AE%E9%A2%98%E5%92%8C%E5%A4%8D%E5%88%B6%E7%8A%B6%E6%80%81%E6%9C%BA"><span class="toc-number">1.1.</span> <span class="toc-text">分布式共识问题和复制状态机</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Raft-%E7%AE%97%E6%B3%95%E6%8B%86%E8%A7%A3"><span class="toc-number">1.2.</span> <span class="toc-text">Raft 算法拆解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5%E5%92%8C%E7%AE%97%E6%B3%95%E6%A1%86%E6%9E%B6"><span class="toc-number">1.3.</span> <span class="toc-text">基本概念和算法框架</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Leader-%E9%80%89%E4%B8%BE"><span class="toc-number">1.4.</span> <span class="toc-text">Leader 选举</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A5%E5%BF%97%E5%A4%8D%E5%88%B6"><span class="toc-number">1.5.</span> <span class="toc-text">日志复制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%89%E5%85%A8%E6%80%A7"><span class="toc-number">1.6.</span> <span class="toc-text">安全性</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Raft%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9A%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%A2%9E%E5%87%8F%E7%9A%84%E2%80%9C%E8%87%AA%E4%B8%BE%E2%80%9D%E5%AE%9E%E7%8E%B0"><span class="toc-number">2.</span> <span class="toc-text">Raft（二）：服务器增减的“自举”实现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%88%90%E5%91%98%E5%8F%98%E6%9B%B4%EF%BC%88Membership-Change%EF%BC%89"><span class="toc-number">2.1.</span> <span class="toc-text">成员变更（Membership Change）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A5%E5%BF%97%E5%8E%8B%E5%AE%9E%EF%BC%88Log-Compaction%EF%BC%89"><span class="toc-number">2.2.</span> <span class="toc-text">日志压实（Log Compaction）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Borg%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9A%E5%BD%93%E7%94%B5%E5%8A%9B%E6%88%90%E4%B8%BA%E6%88%90%E6%9C%AC%E7%93%B6%E9%A2%88"><span class="toc-number">3.</span> <span class="toc-text">Borg（一）：当电力成为成本瓶颈</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#CGroups-Linux-%E4%B8%8B%E9%9A%94%E7%A6%BB%E8%B5%84%E6%BA%90%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-number">3.1.</span> <span class="toc-text">CGroups-Linux 下隔离资源的解决方案</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Borg%EF%BC%9A%E5%85%B8%E5%9E%8B%E7%9A%84-Master-Slave-%E7%B3%BB%E7%BB%9F"><span class="toc-number">3.2.</span> <span class="toc-text">Borg：典型的 Master-Slave 系统</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%8E%E7%94%A8%E6%88%B7%E8%A7%86%E8%A7%92%E7%9C%8B-Borg"><span class="toc-number">3.3.</span> <span class="toc-text">从用户视角看 Borg</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Borg-%E7%9A%84%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84"><span class="toc-number">3.4.</span> <span class="toc-text">Borg 的系统架构</span></a></li></ol></li></ol>
+                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Raft%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9A%E4%B8%8D%E4%BC%9A%E8%83%8C%E5%8F%9B%E7%9A%84%E4%BF%A1%E4%BD%BF"><span class="toc-number">1.</span> <span class="toc-text">Raft（一）：不会背叛的信使</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E5%85%B1%E8%AF%86%E9%97%AE%E9%A2%98%E5%92%8C%E5%A4%8D%E5%88%B6%E7%8A%B6%E6%80%81%E6%9C%BA"><span class="toc-number">1.1.</span> <span class="toc-text">分布式共识问题和复制状态机</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Raft-%E7%AE%97%E6%B3%95%E6%8B%86%E8%A7%A3"><span class="toc-number">1.2.</span> <span class="toc-text">Raft 算法拆解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5%E5%92%8C%E7%AE%97%E6%B3%95%E6%A1%86%E6%9E%B6"><span class="toc-number">1.3.</span> <span class="toc-text">基本概念和算法框架</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Leader-%E9%80%89%E4%B8%BE"><span class="toc-number">1.4.</span> <span class="toc-text">Leader 选举</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A5%E5%BF%97%E5%A4%8D%E5%88%B6"><span class="toc-number">1.5.</span> <span class="toc-text">日志复制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%89%E5%85%A8%E6%80%A7"><span class="toc-number">1.6.</span> <span class="toc-text">安全性</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Raft%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9A%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%A2%9E%E5%87%8F%E7%9A%84%E2%80%9C%E8%87%AA%E4%B8%BE%E2%80%9D%E5%AE%9E%E7%8E%B0"><span class="toc-number">2.</span> <span class="toc-text">Raft（二）：服务器增减的“自举”实现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%88%90%E5%91%98%E5%8F%98%E6%9B%B4%EF%BC%88Membership-Change%EF%BC%89"><span class="toc-number">2.1.</span> <span class="toc-text">成员变更（Membership Change）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%97%A5%E5%BF%97%E5%8E%8B%E5%AE%9E%EF%BC%88Log-Compaction%EF%BC%89"><span class="toc-number">2.2.</span> <span class="toc-text">日志压实（Log Compaction）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Borg%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9A%E5%BD%93%E7%94%B5%E5%8A%9B%E6%88%90%E4%B8%BA%E6%88%90%E6%9C%AC%E7%93%B6%E9%A2%88"><span class="toc-number">3.</span> <span class="toc-text">Borg（一）：当电力成为成本瓶颈</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#CGroups-Linux-%E4%B8%8B%E9%9A%94%E7%A6%BB%E8%B5%84%E6%BA%90%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-number">3.1.</span> <span class="toc-text">CGroups-Linux 下隔离资源的解决方案</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Borg%EF%BC%9A%E5%85%B8%E5%9E%8B%E7%9A%84-Master-Slave-%E7%B3%BB%E7%BB%9F"><span class="toc-number">3.2.</span> <span class="toc-text">Borg：典型的 Master-Slave 系统</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%8E%E7%94%A8%E6%88%B7%E8%A7%86%E8%A7%92%E7%9C%8B-Borg"><span class="toc-number">3.3.</span> <span class="toc-text">从用户视角看 Borg</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Borg-%E7%9A%84%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84"><span class="toc-number">3.4.</span> <span class="toc-text">Borg 的系统架构</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Borg%EF%BC%88%E4%BA%8C%EF%BC%89%EF%BC%9A%E4%BA%92%E4%B8%8D%E2%80%9C%E4%BF%A1%E4%BB%BB%E2%80%9D%E7%9A%84%E8%B0%83%E5%BA%A6%E7%B3%BB%E7%BB%9F"><span class="toc-number">4.</span> <span class="toc-text">Borg（二）：互不“信任”的调度系统</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E2%80%9C%E8%B4%AA%E5%BF%83%E2%80%9D%E7%9A%84%E5%BC%80%E5%8F%91%E8%80%85%E5%92%8C-Borg"><span class="toc-number">4.1.</span> <span class="toc-text">“贪心”的开发者和 Borg</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B9%B3%E5%9D%87%E5%88%86%E9%85%8D%E8%BF%98%E6%98%AF%E5%A4%9A%E7%95%99%E7%82%B9%E9%97%B2%E4%BA%BA"><span class="toc-number">4.2.</span> <span class="toc-text">平均分配还是多留点闲人</span></a></li></ol></li></ol>
                     </div>
                 </span>
             </div>
