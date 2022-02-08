@@ -11,12 +11,12 @@
   <meta name="description" content="天下大事，必作于细——引自STL源码剖析 希望可以从中汲取到很多智慧">
 <meta property="og:type" content="article">
 <meta property="og:title" content="STL源码剖析--读书笔记">
-<meta property="og:url" content="http://woaixiaoyuyu.github.io/2022/02/07/STL%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90/index.html">
+<meta property="og:url" content="http://woaixiaoyuyu.github.io/2022/02/08/STL%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90/index.html">
 <meta property="og:site_name" content="xiaoyuyulala">
 <meta property="og:description" content="天下大事，必作于细——引自STL源码剖析 希望可以从中汲取到很多智慧">
 <meta property="og:locale">
-<meta property="article:published_time" content="2022-02-07T09:46:32.000Z">
-<meta property="article:modified_time" content="2022-02-07T09:50:38.121Z">
+<meta property="article:published_time" content="2022-02-08T15:25:32.000Z">
+<meta property="article:modified_time" content="2022-02-08T15:25:41.240Z">
 <meta property="article:author" content="xiaoyuyu">
 <meta property="article:tag" content="C++">
 <meta property="article:tag" content="STL">
@@ -164,8 +164,8 @@
   
 
         
-        <a href="/2022/02/07/STL%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90/" class="archive-article-date">
-  	<time datetime="2022-02-07T09:46:32.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-02-07</time>
+        <a href="/2022/02/08/STL%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90/" class="archive-article-date">
+  	<time datetime="2022-02-08T15:25:32.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-02-08</time>
 </a>
         
       </header>
@@ -190,6 +190,34 @@
 <h2 id="Function-call操作符-operator"><a href="#Function-call操作符-operator" class="headerlink" title="Function call操作符(operator())"></a>Function call操作符(operator())</h2><p>在过去c语言时代，欲将函数当作参数传递，唯有通过函数指针才能达成。</p>
 <p>但是函数指针优缺点，最重要的是他无法持有自己的状态，也无法达到组件技术的可适配性，也就是无法再将某些修饰条件加诸于其上而改变其状态。</p>
 <p>STL算法的特殊版本所接受的所谓“条件”或“策略”或“一整组操作”，都以仿函数形式呈现。</p>
+<h1 id="空间的配置与释放"><a href="#空间的配置与释放" class="headerlink" title="空间的配置与释放"></a>空间的配置与释放</h1><p>SGI标准对此的设计哲学如下：</p>
+<ul>
+<li>向system heap要求空间</li>
+<li>考虑多线程状态</li>
+<li>考虑内存不足时的应对措施</li>
+<li>考虑过多“小型区块”可能造成的内存碎片问题</li>
+</ul>
+<p>按照我自己的积累想到的思路就是，对不同大小的内存用不同的链表进行管理，并调整合并的策略，这也是linux中free函数的做法。</p>
+<p>C++的内存配置基本操作是::operator new()，基本的释放操作是::delete()，这两个全局函数相当于c的malloc()和free()，SGI也确实以malloc()和free()实现的。——嘿嘿，这不是想到一块去了么～</p>
+<p>SGI设计了双层配置器，如果配置区块大小超过128bytes，则使用第一层配置器，也就是直接使用malloc()和free()；否则使用第二级配置器，为了降低负担，使用复杂的memory pool整理方式。维护16个自由链表，负责16中小型区块的配置能力。</p>
+<h2 id="第一级配置器-malloc-alloc-template"><a href="#第一级配置器-malloc-alloc-template" class="headerlink" title="第一级配置器 __malloc_alloc_template"></a>第一级配置器 __malloc_alloc_template</h2><p>总体就是在使用malloc()，realloc()，如果内存不足，会调用oom_malloc()，oom_realloc()，同时也可以调用set_new_handler()从而让发生oom时，调用自己自己制定的分配策略。</p>
+<p>tips:The point to note is that <strong>realloc() should only be used for dynamically allocated memory</strong>.</p>
+<h2 id="第二级配置器-default-alloc-template"><a href="#第二级配置器-default-alloc-template" class="headerlink" title="第二级配置器 __default_alloc_template"></a>第二级配置器 __default_alloc_template</h2><p>这里的知识点要是具体想了解，可以搜索一下ctf wiki的linux pwn部分，其实有更完备的解释，当时学ctf的时候接触过，就暂时不展开了。free-lists的节点结构如下，free-lists就是实际管理内存快分配释放的组建，不同类型的内存快在不同的list上：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">union</span> <span class="title">obj</span> &#123;</span></span><br><span class="line">  <span class="class"><span class="keyword">union</span> <span class="title">obj</span> * <span class="title">free_list_link</span>;</span></span><br><span class="line">  <span class="keyword">char</span> client_data[<span class="number">1</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这是属于一物二用，可以节省空间。</p>
+<h2 id="内存池"><a href="#内存池" class="headerlink" title="内存池"></a>内存池</h2><p>当free list中没有可用的区块时，就需要去内存池memory pool上分割一些空间来做堆块，并放到free list上，一般性是20块，如果不够20块，但是也满足需求时，也返回不足的区块；如果连一个区块空间都无法供应，显然需要再调用malloc()从heap中配置内存，为内存池注入活水，这里的水量时判断内存池空闲空间大小的依据，其实就是end_free - start_free。</p>
+<p>万一，system heap空间都不够了，malloc()调用失败，就会四处找“尚有未用区块，且区块足够够大”的free lists，找到了就用。</p>
+<h2 id="内存处理基本工具"><a href="#内存处理基本工具" class="headerlink" title="内存处理基本工具"></a>内存处理基本工具</h2><p>STL定义有五个全局函数，作用于为初始化的空间上，<strong>注意，是为初始化，不是为开辟</strong>。五函数如下：</p>
+<ul>
+<li>construct()</li>
+<li>destroy()</li>
+<li>uninitialized_copy().   应用于高层次函数copy()</li>
+<li>uninitialized_fill().       应用于高层函数fill()</li>
+<li>uninitialized_fill_n().   应用于高层函数fill_n()</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// [first,last)范围内的每一个迭代器都指向为初始化的区域，范围内的每一个对象都调用construct</span></span><br><span class="line"><span class="comment">// 该函数会调用construct(&amp;*(result+(i-first)),*i)</span></span><br><span class="line"><span class="function"><span class="keyword">template</span>&lt;class InputIterator, class ForwardIterator&gt;</span></span><br><span class="line"><span class="function">ForwardIterator <span class="title">unintialized_copy</span><span class="params">(InputIterator first, InputIterator last, ForwardIterator result)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 每个迭代器调用construct(&amp;*i,x)</span></span><br><span class="line"><span class="function"><span class="keyword">template</span>&lt;class ForwardIterator, class T&gt;</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">unintialized_fill</span><span class="params">(ForwardIterator first, ForwardIterator last, <span class="keyword">const</span> T&amp; x)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 有了size大小，自然不需要last了</span></span><br><span class="line"><span class="function"><span class="keyword">template</span>&lt;class ForwardIterator, class Size, class T&gt;</span></span><br><span class="line"><span class="function">ForwardIterator <span class="title">uninitialized_fill_n</span><span class="params">(ForwardIterator first, Size n, <span class="keyword">const</span> T&amp; x)</span></span>;</span><br></pre></td></tr></table></figure>
+
 
       
 	  
@@ -202,7 +230,7 @@
     
     <br>
     <strong>本文链接：</strong>
-    http://woaixiaoyuyu.github.io/2022/02/07/STL%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90/
+    http://woaixiaoyuyu.github.io/2022/02/08/STL%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90/
     <br>
     <strong>版权声明：</strong>
     本作品采用
@@ -303,7 +331,7 @@
     <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
     <p>扫一扫，分享到微信</p>
     <div class="wx-qrcode">
-      <img src="//pan.baidu.com/share/qrcode?url=http://woaixiaoyuyu.github.io/2022/02/07/STL%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90/" alt="微信分享二维码">
+      <img src="//pan.baidu.com/share/qrcode?url=http://woaixiaoyuyu.github.io/2022/02/08/STL%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90/" alt="微信分享二维码">
     </div>
 </div>
 
@@ -346,7 +374,7 @@
                 </span>
                 <span class="tooltip-content">
                     <div class="toc-article">
-                    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#STL%E6%A6%82%E8%AE%BA%E4%B8%8E%E7%89%88%E6%9C%AC%E7%AE%80%E4%BB%8B"><span class="toc-number">1.</span> <span class="toc-text">STL概论与版本简介</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#STL%E5%85%AD%E5%A4%A7%E7%BB%84%E4%BB%B6%E5%8A%9F%E8%83%BD%E4%B8%8E%E8%BF%90%E7%94%A8"><span class="toc-number">1.1.</span> <span class="toc-text">STL六大组件功能与运用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%B4%E6%97%B6%E5%AF%B9%E8%B1%A1%E7%9A%84%E4%BA%A7%E7%94%9F%E8%BF%90%E7%94%A8"><span class="toc-number">1.2.</span> <span class="toc-text">临时对象的产生运用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%99%E6%80%81%E5%B8%B8%E9%87%8F%E6%95%B4%E6%95%B0%E6%88%90%E5%91%98%E5%9C%A8class%E5%86%85%E9%83%A8%E7%9B%B4%E6%8E%A5%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-number">1.3.</span> <span class="toc-text">静态常量整数成员在class内部直接初始化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Function-call%E6%93%8D%E4%BD%9C%E7%AC%A6-operator"><span class="toc-number">1.4.</span> <span class="toc-text">Function call操作符(operator())</span></a></li></ol></li></ol>
+                    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#STL%E6%A6%82%E8%AE%BA%E4%B8%8E%E7%89%88%E6%9C%AC%E7%AE%80%E4%BB%8B"><span class="toc-number">1.</span> <span class="toc-text">STL概论与版本简介</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#STL%E5%85%AD%E5%A4%A7%E7%BB%84%E4%BB%B6%E5%8A%9F%E8%83%BD%E4%B8%8E%E8%BF%90%E7%94%A8"><span class="toc-number">1.1.</span> <span class="toc-text">STL六大组件功能与运用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%B4%E6%97%B6%E5%AF%B9%E8%B1%A1%E7%9A%84%E4%BA%A7%E7%94%9F%E8%BF%90%E7%94%A8"><span class="toc-number">1.2.</span> <span class="toc-text">临时对象的产生运用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%99%E6%80%81%E5%B8%B8%E9%87%8F%E6%95%B4%E6%95%B0%E6%88%90%E5%91%98%E5%9C%A8class%E5%86%85%E9%83%A8%E7%9B%B4%E6%8E%A5%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-number">1.3.</span> <span class="toc-text">静态常量整数成员在class内部直接初始化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Function-call%E6%93%8D%E4%BD%9C%E7%AC%A6-operator"><span class="toc-number">1.4.</span> <span class="toc-text">Function call操作符(operator())</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E7%A9%BA%E9%97%B4%E7%9A%84%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%87%8A%E6%94%BE"><span class="toc-number">2.</span> <span class="toc-text">空间的配置与释放</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E7%BA%A7%E9%85%8D%E7%BD%AE%E5%99%A8-malloc-alloc-template"><span class="toc-number">2.1.</span> <span class="toc-text">第一级配置器 __malloc_alloc_template</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E7%BA%A7%E9%85%8D%E7%BD%AE%E5%99%A8-default-alloc-template"><span class="toc-number">2.2.</span> <span class="toc-text">第二级配置器 __default_alloc_template</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E6%B1%A0"><span class="toc-number">2.3.</span> <span class="toc-text">内存池</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E5%A4%84%E7%90%86%E5%9F%BA%E6%9C%AC%E5%B7%A5%E5%85%B7"><span class="toc-number">2.4.</span> <span class="toc-text">内存处理基本工具</span></a></li></ol></li></ol>
                     </div>
                 </span>
             </div>
