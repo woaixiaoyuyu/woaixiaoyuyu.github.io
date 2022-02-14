@@ -6102,7 +6102,7 @@
   </entry>
   <entry>
     <title>STL源码剖析--读书笔记</title>
-    <url>/2022/02/13/STL%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90/</url>
+    <url>/2022/02/14/STL%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90/</url>
     <content><![CDATA[<p>天下大事，必作于细——引自STL源码剖析</p>
 <p>希望可以从中汲取到很多智慧</p>
 <span id="more"></span>
@@ -6307,6 +6307,15 @@
 </li>
 </ul>
 <p>deque的元素操作的原理，暂时不展开，主要设计难点就是上文说的，因为单个元素的操作，对于整体的matser-slave的调度压力不大，涉及的也不多。</p>
+<h2 id="stack"><a href="#stack" class="headerlink" title="stack"></a>stack</h2><h3 id="概述-1"><a href="#概述-1" class="headerlink" title="概述"></a>概述</h3><p>是一种first in last out的数据结构。</p>
+<p>由于stack所有元素都必须符合first in last out的规则，只有stack顶端的元素，才能被外界直接操作到，所以stack不需要提供迭代器，也不提供走访功能。</p>
+<p>底层的容器是deque和vector的版本都见过了，所以所用的版本具体是怎么实现的，如果涉及到调试，需要自己去源码看一下。</p>
+<p>其余暂时没什么可以补充的。</p>
+<h2 id="queue"><a href="#queue" class="headerlink" title="queue"></a>queue</h2><p>是一种first in first out的数据结构。</p>
+<p>底层的容器是deque，由于queue和stack一样，由他的底部容器完成其所有工作，**而具有这种“修改某物接口，形成另一种风貌”之性质者，称为adapter(配接器)**，因此STL queue往往不被归类为container(容器)，而被归类为container adapter。</p>
+<p>同理，和stack一样，queue也不提供遍历功能，也不提供迭代器。</p>
+<h2 id="heap"><a href="#heap" class="headerlink" title="heap"></a>heap</h2><p>heap并不属于STL容器组件，扮演priority queue的助手，这东西java里也用来做heap的算法题，用法也差不多：自己设置优先级，然后存数据，然后排序。</p>
+<p>同理，也没有迭代器，具体算法参考相关的数据结构书，如果自己实现的话：标准情况下，可以建造一个树形的结构，但是实际做题中，如果面试官要求你不要用priority queue相关的api，如果不熟练，不要用树结构，可以考虑利用数组来实现完全二叉树，用数组下标来表示二叉树中各个节点的位置。</p>
 ]]></content>
       <tags>
         <tag>C++</tag>
