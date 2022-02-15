@@ -6102,7 +6102,7 @@
   </entry>
   <entry>
     <title>STL源码剖析--读书笔记</title>
-    <url>/2022/02/14/STL%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90/</url>
+    <url>/2022/02/15/STL%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90/</url>
     <content><![CDATA[<p>天下大事，必作于细——引自STL源码剖析</p>
 <p>希望可以从中汲取到很多智慧</p>
 <span id="more"></span>
@@ -6316,6 +6316,10 @@
 <p>同理，和stack一样，queue也不提供遍历功能，也不提供迭代器。</p>
 <h2 id="heap"><a href="#heap" class="headerlink" title="heap"></a>heap</h2><p>heap并不属于STL容器组件，扮演priority queue的助手，这东西java里也用来做heap的算法题，用法也差不多：自己设置优先级，然后存数据，然后排序。</p>
 <p>同理，也没有迭代器，具体算法参考相关的数据结构书，如果自己实现的话：标准情况下，可以建造一个树形的结构，但是实际做题中，如果面试官要求你不要用priority queue相关的api，如果不熟练，不要用树结构，可以考虑利用数组来实现完全二叉树，用数组下标来表示二叉树中各个节点的位置。</p>
+<h2 id="priority-queue"><a href="#priority-queue" class="headerlink" title="priority_queue"></a>priority_queue</h2><p>只允许在底端加入元素，并从顶端取出元素。其内的元素并非依照被推入的次序排列，而是自动依照元素的权值排列。</p>
+<p>缺省情况下priority_queue是利用一个max-heap完成，后者是一个以vector表现的complete binary tree，当然，缺省情况下自然是以vector为底部容器。结合取数的原则，自然也就不提供遍历功能，不提供迭代器。</p>
+<h2 id="slist"><a href="#slist" class="headerlink" title="slist"></a>slist</h2><p>SGL STL提供了一个单向链表slist(single linked list)，底部迭代器是forward iterator，和list一样，insert，erase，splice等操作不会造成原油迭代器的实效。</p>
+<p>list插入的新元素会插入在指定位置之前，对于slist这样的单链表而言，无法直接查看上一个元素，只能从头开始找，所以除了slist的起点附近区域，都不推荐执行insert和erase；同样slist也不提供push_back()，只提供了push_front()。</p>
 ]]></content>
       <tags>
         <tag>C++</tag>
