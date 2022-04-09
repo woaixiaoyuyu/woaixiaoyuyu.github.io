@@ -11,12 +11,12 @@
   <meta name="description" content="Effective Modern C++ 这本书一些自己觉得重要的段落的翻译。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Effective Modern C++ 翻译">
-<meta property="og:url" content="http://woaixiaoyuyu.github.io/2022/04/08/Effective%20Modern%20C++%20%E7%BF%BB%E8%AF%91/index.html">
+<meta property="og:url" content="http://woaixiaoyuyu.github.io/2022/04/09/Effective%20Modern%20C++%20%E7%BF%BB%E8%AF%91/index.html">
 <meta property="og:site_name" content="xiaoyuyulala">
 <meta property="og:description" content="Effective Modern C++ 这本书一些自己觉得重要的段落的翻译。">
 <meta property="og:locale">
-<meta property="article:published_time" content="2022-04-08T14:55:40.000Z">
-<meta property="article:modified_time" content="2022-04-08T14:55:52.611Z">
+<meta property="article:published_time" content="2022-04-09T03:37:40.000Z">
+<meta property="article:modified_time" content="2022-04-09T03:37:43.674Z">
 <meta property="article:author" content="xiaoyuyu">
 <meta property="article:tag" content="C++">
 <meta name="twitter:card" content="summary">
@@ -163,8 +163,8 @@
   
 
         
-        <a href="/2022/04/08/Effective%20Modern%20C++%20%E7%BF%BB%E8%AF%91/" class="archive-article-date">
-  	<time datetime="2022-04-08T14:55:40.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-04-08</time>
+        <a href="/2022/04/09/Effective%20Modern%20C++%20%E7%BF%BB%E8%AF%91/" class="archive-article-date">
+  	<time datetime="2022-04-09T03:37:40.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-04-09</time>
 </a>
         
       </header>
@@ -296,7 +296,7 @@
 
 <p>这些没有什么可意外的。</p>
 <p>在C++11中，decltype最常用的地方是声明一个返回值类型依赖于的参数的函数模版。假如我们需要编写一个支持提供下标访问元素([i])的容器的函数，函数返回值的类型要和直接使用[i]下标访问的返回值类型一样。</p>
-<p>一个内部元素类型是T的容器使用operator[]，通常返回一个T&amp;，通常情况下，都是对的。然而，对于std::vector<bool>，operator[]不会返回一个bool&amp;，而是返回一个全新的对象，原因之后再说，这里需要注意的是，operator[]的返回值取决于容易本身。</p>
+<p>一个内部元素类型是T的容器使用operator[]，通常返回一个T&amp;，通常情况下，都是对的。然而，对于<code>std::vector&lt;bool&gt;</code>，operator[]不会返回一个bool&amp;，而是返回一个全新的对象，原因之后再说，这里需要注意的是，operator[]的返回值取决于容易本身。</p>
 <p>有了decltype的帮助，实现起来就很容易了。在模版里最常用的就是用decltype配合auto来推导函数返回值的类型，虽然需要一些限制。</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// works, but requires refinement</span></span><br><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> Container, <span class="keyword">typename</span> Index&gt; </span></span><br><span class="line"><span class="function"><span class="keyword">auto</span> <span class="title">authAndAccess</span><span class="params">(Container&amp; c, Index i)</span> </span></span><br><span class="line"><span class="function">-&gt; <span class="title">decltype</span><span class="params">(c[i])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"> <span class="built_in">authenticateUser</span>();</span><br><span class="line"> <span class="keyword">return</span> c[i];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
@@ -323,7 +323,7 @@
 <p>但是，传递给函数一个右值时需要考虑的。一个右值容器，作为一个临时对象，通常这个临时对象都会在调用authAndAccess函数结束后就销毁了，这代表着指向临时对象里元素的引用在函数结束后会变成悬垂引用。但是传递一个临时对象给函数还是有意义的，比如函数只是想对临时对象中的元素进行一个拷贝，如下：</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">std::deque&lt;std::string&gt; <span class="title">makeStringDeque</span><span class="params">()</span></span>; <span class="comment">// factory function</span></span><br><span class="line"><span class="comment">// make copy of 5th element of deque returned</span></span><br><span class="line"><span class="comment">// from makeStringDeque</span></span><br><span class="line"><span class="keyword">auto</span> s = <span class="built_in">authAndAccess</span>(<span class="built_in">makeStringDeque</span>(), <span class="number">5</span>);</span><br></pre></td></tr></table></figure>
 
-<p>如果要支持上述的应用，这代表让函数authAndAccess接受左值和右值的实参都是必要的。这时候可以考虑重载，分别对参数是左值和右值时采取不同的方法，但这样我们就需要保留两个函数。避免保留两个函数的方法，就需要形参可以绑定左值和右值，这里就引出了universal references(我没找到合适的中文解释)和完美转发，后续会进一步介绍，改进后的函数如下：</p>
+<p>如果要支持上述的应用，这代表让函数authAndAccess接受左值和右值的实参都是必要的。这时候可以考虑重载，分别对参数是左值和右值时采取不同的方法，但这样我们就需要保留两个函数。避免保留两个函数的方法，就需要形参可以绑定左值和右值，这里就引出了universal references(我没找到合适的中文解释)和完美转发，后续会进一步介绍，改进后的函数如下，这是为什么是用完美转发之后再说，为了和条款25的建议是一致的：</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// c is now a universal reference</span></span><br><span class="line"><span class="comment">// C++14 version</span></span><br><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> Container, <span class="keyword">typename</span> Index&gt;</span></span><br><span class="line"><span class="function"><span class="keyword">decltype</span>(<span class="keyword">auto</span>) <span class="title">authAndAccess</span><span class="params">(Container&amp;&amp; c, Index i)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"> <span class="built_in">authenticateUser</span>();</span><br><span class="line"> <span class="keyword">return</span> std::forward&lt;Container&gt;(c)[i];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// C++11 version</span></span><br><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> Container, <span class="keyword">typename</span> Index&gt; </span></span><br><span class="line"><span class="function"><span class="keyword">auto</span> </span></span><br><span class="line"><span class="function"><span class="title">authAndAccess</span><span class="params">(Container&amp;&amp; c, Index i)</span> </span></span><br><span class="line"><span class="function">-&gt; <span class="title">decltype</span><span class="params">(std::forward&lt;Container&gt;(c)[i])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"> <span class="built_in">authenticateUser</span>();</span><br><span class="line"> <span class="keyword">return</span> std::forward&lt;Container&gt;(c)[i];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>对于变量的名字，虽然是一个左值，但是不会影响decltype的行为，变量是什么类型，就获得什么类型。对于左值表达式，decltype保证获取的类型一定是左值引用，但有一个例子需要进一步介绍一下：</p>
@@ -333,7 +333,48 @@
 <p>这一点对与函数返回值的类型推导同样有影响，导致意想不到的后果，如下：</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">decltype</span>(<span class="keyword">auto</span>) <span class="title">f1</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"> <span class="keyword">int</span> x = <span class="number">0</span>;</span><br><span class="line"> …</span><br><span class="line"><span class="keyword">return</span> x; <span class="comment">// decltype(x) is int, so f1 returns int</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">decltype</span>(<span class="keyword">auto</span>) <span class="title">f2</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"> <span class="keyword">int</span> x = <span class="number">0</span>;</span><br><span class="line"> …</span><br><span class="line"><span class="keyword">return</span> (x); <span class="comment">// decltype((x)) is int&amp;, so f2 returns int&amp;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
+<p>auto的滥用是可怕的，如何正确得使用auto任重而道远。</p>
+<h2 id="Item-5-Prefer-auto-to-explicit-type-declarations"><a href="#Item-5-Prefer-auto-to-explicit-type-declarations" class="headerlink" title="Item 5: Prefer auto to explicit type declarations"></a>Item 5: Prefer auto to explicit type declarations</h2><p>优先使用auto而非显式类型声明。</p>
+<p>这整个item介绍的，其实之前深入应用c++11的笔记有提到，我个人的理解如下(虽然可能和原文的有一些出入)：</p>
+<ul>
+<li>对于一些复杂的容器，或者容易的元素，类型使用显示声明会显得繁琐，这时候使用auto是很不错的</li>
+<li>在模版编程过程中，考虑通解的情况下，auto和decltype可能会事半功倍</li>
+<li>简化函数的定义</li>
+<li>但我个人还是觉得能不用就不用(但前两种情况下使用还是不错的)</li>
+</ul>
+<h2 id="Item-6-Use-the-explicitly-typed-initializer-idiom-when-auto-deduces-undesired-types"><a href="#Item-6-Use-the-explicitly-typed-initializer-idiom-when-auto-deduces-undesired-types" class="headerlink" title="Item 6: Use the explicitly typed initializer idiom when auto deduces undesired types"></a>Item 6: Use the explicitly typed initializer idiom when auto deduces undesired types</h2><p>当auto推导出非预期类型时应当使用显式的类型初始化。</p>
+<p>对于这一点，就需要了解什么时候使用auto时，获得的类型并不是如我们所愿。举个例子，假如我们有一个函数，参数是Widget，返回值是<code>std::vector&lt;bool&gt;</code>，每个bool代表Widget是否提供了相应的特性。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">std::vector&lt;<span class="keyword">bool</span>&gt; <span class="title">features</span><span class="params">(<span class="keyword">const</span> Widget&amp; w)</span></span>;</span><br></pre></td></tr></table></figure>
 
+<p>假设认为第5位代表Widget是否具有高优先级：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Widget w;</span><br><span class="line">…</span><br><span class="line"><span class="keyword">bool</span> highPriority = <span class="built_in">features</span>(w)[<span class="number">5</span>]; <span class="comment">// is w high priority?</span></span><br><span class="line">…</span><br><span class="line"><span class="built_in">processWidget</span>(w, highPriority); <span class="comment">// process w in accord with its priority</span></span><br></pre></td></tr></table></figure>
+
+<p>这段代码是没问题的，但假如我们用auto替代highPriority的显示声明。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> highPriority = <span class="built_in">features</span>(w)[<span class="number">5</span>]; <span class="comment">// is w high priority?</span></span><br><span class="line"><span class="built_in">processWidget</span>(w, highPriority); <span class="comment">// undefined behavior!</span></span><br></pre></td></tr></table></figure>
+
+<p>编译还是能通过的，但结构就不如愿了。因为这里auto推导出的类型不是bool(之前说过<code>vector&lt;bool&gt;</code>返回的是bool，别的类型返回的是引用)，推导出的类型<code>std::vector&lt;bool&gt;::reference</code>(一个内嵌在<code>std::vector&lt;bool&gt;</code>里的一个类)。</p>
+<p>这些来这部分我直接搬了中文翻译……</p>
+<p><code>std::vector&lt;bool&gt;::reference</code>存在是因为<code>std::vector&lt;bool&gt;</code>是对 bool 数据封装的模板特化，一个bit对应一个 bool 。这就给 std::vector::operator[] 带来了问题，因为<code>std::vector&lt;T&gt;</code>的 operator[] 应该返回一个 T&amp; ，但是C++禁止bits的引用。没办法返回一个 bool&amp; ，<code>std::vector&lt;T&gt;</code>的 operator[] 于是就返回了一个行为上和 bool&amp; 相似的对象。想 要这种行为成功，<code>std::vector&lt;bool&gt;::reference</code> 对象必须能在 bool&amp; 的能处的语境中使用。 </p>
+<p>在<code>std::vector&lt;bool&gt;::reference</code>对象的特性中，是他隐式的转换成 bool 才使得这种操作得以成功。（不是转换成 bool&amp; ，而是 bool 。去解释详细的<code>std::vector&lt;bool&gt;::reference</code>对象如何模拟一个 bool&amp; 的行为有有些偏离主题，所以我们就只是简单的提一下这种隐式转换只是这种技术中的一部。） </p>
+<p>在大脑中带上这种信息，再次阅读原先的代码： </p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">bool</span> highPriority = <span class="built_in">features</span>(w)[<span class="number">5</span>]; <span class="comment">// 直接显示highPriority的类型</span></span><br></pre></td></tr></table></figure>
+
+<p>这里，features 返回了一个<code>std::vector&lt;bool&gt;</code>对象，在这里 operator[] 被调用。 operator[] 返回一个<code>std::vector&lt;bool&gt;::reference</code>对象，这个然后隐式的转换成 highPriority 需要用来初始化的 bool 类型。于是就以features返回的<code>std::vector&lt;bool&gt;</code>的第五个bit的数值来结束 highPriority 的数值，这也是我们所预期的。 </p>
+<p>和使用 auto 的 highPriority 声明进行对比： </p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> highPriority = <span class="built_in">features</span>(w)[<span class="number">5</span>]; <span class="comment">// 推导highPriority的类型</span></span><br></pre></td></tr></table></figure>
+
+<p>调用 features 会返回一个临时的<code>std::vector&lt;bool&gt;</code>对象。这个对象是没有名字的，但是对于这个讨论的目的，我会把它叫做 temp ， operator[] 是在 temp 上调用的，<code>std::vector&lt;bool&gt;::reference</code>返回一个由 temp 管理的包含一个指向一个包含bits的数据结构的指针，在word上面加上偏移定位到第五个bit。 </p>
+<p>highPriority 也是一个<code>std::vector&lt;bool&gt;::reference</code>对象的一份拷贝，所以 highPriority 也在 temp 中包含一个指向word的指针，加上偏移定位到第五个bit。在这个声明的结尾， temp 被销毁，因为它是个临时对象。因此， highPriority 包含一个野指针，这也就是调用 processWidget 会造成未定义的行为的原因： </p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">processWidget</span>(w, highPriority); <span class="comment">// 未定义的行为，highPriority包含野指针</span></span><br></pre></td></tr></table></figure>
+
+<p>这中一个类的存在是为了模拟和对外行为和另一个类保持一致，被称为代理类。作为一个通用的法则，“不可见”的代理类不能和auto愉快的玩耍，因此要避免使用下面的代码形式：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> someVar = expression of <span class="string">&quot;invisible&quot;</span> proxy class type;</span><br></pre></td></tr></table></figure>
+
+<p>但是你怎么能知道代理类被使用呢？软件使用它们的时候并不可能会告知它们的存在。它们是不可见的，至少在概念上！这个就需要关注设计模式和文档了，没有别的特别好的方法。</p>
+<p>显式的类型初始化原则涉及到使用 auto 声明一个变量，但是转换初始化表达式到 auto 想要的类型。下面就是一个强制 highPriority 类型是 bool 的例子：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> highPriority = <span class="keyword">static_cast</span>&lt;<span class="keyword">bool</span>&gt;(<span class="built_in">features</span>(w)[<span class="number">5</span>]);</span><br></pre></td></tr></table></figure>
+
+<h2 id="Item-7-Distinguish-between-and-when-creating-objects"><a href="#Item-7-Distinguish-between-and-when-creating-objects" class="headerlink" title="Item 7: Distinguish between () and {} when creating objects"></a>Item 7: Distinguish between () and {} when creating objects</h2>
       
 	  
 
@@ -345,7 +386,7 @@
     
     <br>
     <strong>本文链接：</strong>
-    http://woaixiaoyuyu.github.io/2022/04/08/Effective%20Modern%20C++%20%E7%BF%BB%E8%AF%91/
+    http://woaixiaoyuyu.github.io/2022/04/09/Effective%20Modern%20C++%20%E7%BF%BB%E8%AF%91/
     <br>
     <strong>版权声明：</strong>
     本作品采用
@@ -442,7 +483,7 @@
     <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
     <p>扫一扫，分享到微信</p>
     <div class="wx-qrcode">
-      <img src="//pan.baidu.com/share/qrcode?url=http://woaixiaoyuyu.github.io/2022/04/08/Effective%20Modern%20C++%20%E7%BF%BB%E8%AF%91/" alt="微信分享二维码">
+      <img src="//pan.baidu.com/share/qrcode?url=http://woaixiaoyuyu.github.io/2022/04/09/Effective%20Modern%20C++%20%E7%BF%BB%E8%AF%91/" alt="微信分享二维码">
     </div>
 </div>
 
@@ -485,7 +526,7 @@
                 </span>
                 <span class="tooltip-content">
                     <div class="toc-article">
-                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Item-1-Understand-template-type-deduction"><span class="toc-number">1.</span> <span class="toc-text">Item 1:Understand template type deduction</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#case-1"><span class="toc-number">1.1.</span> <span class="toc-text">case 1</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#case-2"><span class="toc-number">1.2.</span> <span class="toc-text">case 2</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#case-3"><span class="toc-number">1.3.</span> <span class="toc-text">case 3</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Array-Arguments"><span class="toc-number">1.4.</span> <span class="toc-text">Array Arguments</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Function-Arguments"><span class="toc-number">1.5.</span> <span class="toc-text">Function Arguments</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Item-2-Understand-auto-type-deduction"><span class="toc-number">2.</span> <span class="toc-text">Item 2: Understand auto type deduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Item-3-Understand-decltype"><span class="toc-number">3.</span> <span class="toc-text">Item 3: Understand decltype</span></a></li></ol>
+                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Item-1-Understand-template-type-deduction"><span class="toc-number">1.</span> <span class="toc-text">Item 1:Understand template type deduction</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#case-1"><span class="toc-number">1.1.</span> <span class="toc-text">case 1</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#case-2"><span class="toc-number">1.2.</span> <span class="toc-text">case 2</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#case-3"><span class="toc-number">1.3.</span> <span class="toc-text">case 3</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Array-Arguments"><span class="toc-number">1.4.</span> <span class="toc-text">Array Arguments</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Function-Arguments"><span class="toc-number">1.5.</span> <span class="toc-text">Function Arguments</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Item-2-Understand-auto-type-deduction"><span class="toc-number">2.</span> <span class="toc-text">Item 2: Understand auto type deduction</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Item-3-Understand-decltype"><span class="toc-number">3.</span> <span class="toc-text">Item 3: Understand decltype</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Item-5-Prefer-auto-to-explicit-type-declarations"><span class="toc-number">4.</span> <span class="toc-text">Item 5: Prefer auto to explicit type declarations</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Item-6-Use-the-explicitly-typed-initializer-idiom-when-auto-deduces-undesired-types"><span class="toc-number">5.</span> <span class="toc-text">Item 6: Use the explicitly typed initializer idiom when auto deduces undesired types</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Item-7-Distinguish-between-and-when-creating-objects"><span class="toc-number">6.</span> <span class="toc-text">Item 7: Distinguish between () and {} when creating objects</span></a></li></ol>
                     </div>
                 </span>
             </div>
